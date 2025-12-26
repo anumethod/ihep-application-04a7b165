@@ -5,17 +5,104 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
-import { Bot, Activity, Brain, Heart, TrendingUp, Zap, Eye } from 'lucide-react'
+import { Bot, Activity, Brain, Heart, TrendingUp, Zap, Eye, X, Send, User, Maximize2, RotateCcw } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { ScrollArea } from '@/components/ui/scroll-area'
+
+interface ChatMessage {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+  timestamp: Date
+}
 
 export default function DigitalTwinPage() {
   const [selectedSystem, setSelectedSystem] = useState<string | null>(null)
+  const [showChat, setShowChat] = useState(false)
+  const [showFullModel, setShowFullModel] = useState(false)
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
+    {
+      id: '1',
+      role: 'assistant',
+      content: "Hello! I'm your AI health assistant powered by your Digital Twin data. I can help you understand your health metrics, provide insights based on your trends, and answer questions about your wellness journey. How can I help you today?",
+      timestamp: new Date(),
+    },
+  ])
+  const [chatInput, setChatInput] = useState('')
+  const [chatLoading, setChatLoading] = useState(false)
+  const [modelRotation, setModelRotation] = useState(0)
 
   const healthSystems = [
-    { id: 'immune', name: 'Immune System', status: 85, icon: Zap, color: 'text-blue-500' },
-    { id: 'cardiovascular', name: 'Cardiovascular', status: 92, icon: Heart, color: 'text-red-500' },
-    { id: 'nervous', name: 'Nervous System', status: 78, icon: Brain, color: 'text-purple-500' },
-    { id: 'metabolic', name: 'Metabolic', status: 88, icon: Activity, color: 'text-green-500' },
+    { id: 'immune', name: 'Immune System', status: 85, icon: Zap, color: 'text-blue-500', description: 'CD4 count stable, viral load undetectable. Immune response showing positive trends.' },
+    { id: 'cardiovascular', name: 'Cardiovascular', status: 92, icon: Heart, color: 'text-red-500', description: 'Heart rate variability optimal. Blood pressure within healthy range.' },
+    { id: 'nervous', name: 'Nervous System', status: 78, icon: Brain, color: 'text-purple-500', description: 'Cognitive function stable. Sleep quality could be improved for better neural recovery.' },
+    { id: 'metabolic', name: 'Metabolic', status: 88, icon: Activity, color: 'text-green-500', description: 'Metabolism functioning well. Glucose levels stable. Consider increased physical activity.' },
   ]
+
+  // AI Chat responses based on context
+  const getAIResponse = (userMessage: string): string => {
+    const lowerMessage = userMessage.toLowerCase()
+
+    if (lowerMessage.includes('cd4') || lowerMessage.includes('immune')) {
+      return "Based on your Digital Twin analysis, your immune system is performing well at 85%. Your CD4 count has been stable over the past 30 days, and the simulation predicts continued stability with your current medication adherence rate of 95%."
+    }
+    if (lowerMessage.includes('heart') || lowerMessage.includes('cardio')) {
+      return "Your cardiovascular health score is excellent at 92%. Your Digital Twin shows optimal heart rate variability and healthy blood pressure trends. The model suggests maintaining your current activity level of approximately 8,400 daily steps."
+    }
+    if (lowerMessage.includes('sleep') || lowerMessage.includes('tired') || lowerMessage.includes('energy')) {
+      return "Your Digital Twin has identified sleep quality as an area for improvement. The nervous system score of 78% reflects irregular sleep patterns. The simulation suggests establishing a consistent sleep schedule could improve your overall wellness score by 5-8%."
+    }
+    if (lowerMessage.includes('medication') || lowerMessage.includes('adherence')) {
+      return "Your medication adherence rate is excellent at 95% over the past 30 days. Your Digital Twin predicts that maintaining this level will keep your health metrics stable. The model shows a 95% confidence in positive health outcomes at this adherence rate."
+    }
+    if (lowerMessage.includes('weight') || lowerMessage.includes('diet') || lowerMessage.includes('nutrition')) {
+      return "Based on metabolic modeling, your Digital Twin suggests you're on track to reach your target weight in approximately 6 weeks at your current pace. The simulation recommends increasing vitamin D intake for optimal immune support."
+    }
+    if (lowerMessage.includes('stress') || lowerMessage.includes('anxiety') || lowerMessage.includes('mental')) {
+      return "Your Digital Twin's neural pathway analysis suggests stress levels are within normal range. However, incorporating 10-15 minutes of daily mindfulness practice could improve both your nervous system score and overall wellness index by 3-5%."
+    }
+
+    return "I've analyzed your Digital Twin data for relevant insights. Your overall health index is 86%, indicating excellent health trends. Is there a specific body system or health metric you'd like me to focus on? I can provide detailed analysis of your immune, cardiovascular, nervous, or metabolic systems."
+  }
+
+  const handleSendChat = async () => {
+    if (!chatInput.trim()) return
+
+    const userMessage: ChatMessage = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: chatInput,
+      timestamp: new Date(),
+    }
+
+    setChatMessages((prev) => [...prev, userMessage])
+    const userInput = chatInput
+    setChatInput('')
+    setChatLoading(true)
+
+    // Simulate AI processing time
+    await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 500))
+
+    const aiMessage: ChatMessage = {
+      id: (Date.now() + 1).toString(),
+      role: 'assistant',
+      content: getAIResponse(userInput),
+      timestamp: new Date(),
+    }
+    setChatMessages((prev) => [...prev, aiMessage])
+    setChatLoading(false)
+  }
+
+  const handleChatKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSendChat()
+    }
+  }
+
+  const rotateModel = () => {
+    setModelRotation((prev) => (prev + 45) % 360)
+  }
 
   return (
     <div className="space-y-8">
@@ -51,7 +138,7 @@ export default function DigitalTwinPage() {
         </CardContent>
       </Card>
 
-      {/* 3D Visualization Placeholder */}
+      {/* 3D Visualization */}
       <Card className="apple-card">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
@@ -59,39 +146,114 @@ export default function DigitalTwinPage() {
               <Eye className="h-5 w-5 mr-2" />
               Interactive Health Model
             </span>
-            <Button variant="outline" size="sm">
-              Fullscreen
-            </Button>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={rotateModel}>
+                <RotateCcw className="h-4 w-4 mr-1" />
+                Rotate
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setShowFullModel(!showFullModel)}>
+                <Maximize2 className="h-4 w-4 mr-1" />
+                {showFullModel ? 'Collapse' : 'Expand'}
+              </Button>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="aspect-video bg-gradient-to-br from-slate-900 to-blue-900 rounded-lg relative overflow-hidden">
-            {/* Placeholder for 3D visualization */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center text-white">
-                <Bot className="h-16 w-16 mx-auto mb-4 animate-pulse" />
-                <p className="text-lg font-medium">3D Health Model</p>
-                <p className="text-sm text-gray-300 mt-2">
-                  Interactive visualization of your body systems
-                </p>
-                <Button className="mt-4 gradient-primary">
-                  Explore Model
-                </Button>
+          <div
+            className={`bg-gradient-to-br from-slate-900 to-blue-900 rounded-lg relative overflow-hidden transition-all duration-500 ${showFullModel ? 'aspect-square' : 'aspect-video'}`}
+            onClick={() => setSelectedSystem(null)}
+          >
+            {/* Interactive body visualization */}
+            <div
+              className="absolute inset-0 flex items-center justify-center transition-transform duration-700"
+              style={{ transform: `rotateY(${modelRotation}deg)` }}
+              onClick={() => setSelectedSystem(null)}
+            >
+              <div className="relative">
+                {/* Stylized human body outline */}
+                <svg viewBox="0 0 200 400" className="w-32 h-64 md:w-48 md:h-96">
+                  {/* Body outline */}
+                  <ellipse cx="100" cy="40" rx="30" ry="35" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2" />
+                  <path d="M70 75 L60 180 L80 180 L85 140 L100 145 L115 140 L120 180 L140 180 L130 75" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2" />
+                  <path d="M60 180 L55 300 L75 300 L85 200" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2" />
+                  <path d="M140 180 L145 300 L125 300 L115 200" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2" />
+                  <path d="M55 300 L50 380 L70 380 L75 300" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2" />
+                  <path d="M145 300 L150 380 L130 380 L125 300" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2" />
+                  {/* Arms */}
+                  <path d="M70 85 L30 160 L35 165 L75 95" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2" />
+                  <path d="M130 85 L170 160 L165 165 L125 95" fill="none" stroke="rgba(255,255,255,0.6)" strokeWidth="2" />
+
+                  {/* Interactive system indicators */}
+                  {/* Brain - Nervous System */}
+                  <circle
+                    cx="100" cy="35" r="15"
+                    fill={selectedSystem === 'nervous' ? 'rgba(168, 85, 247, 0.8)' : 'rgba(168, 85, 247, 0.3)'}
+                    className="cursor-pointer transition-all hover:fill-purple-400"
+                    onClick={(e) => { e.stopPropagation(); setSelectedSystem(selectedSystem === 'nervous' ? null : 'nervous'); }}
+                  />
+                  {/* Heart - Cardiovascular */}
+                  <circle
+                    cx="95" cy="100" r="12"
+                    fill={selectedSystem === 'cardiovascular' ? 'rgba(239, 68, 68, 0.8)' : 'rgba(239, 68, 68, 0.3)'}
+                    className="cursor-pointer transition-all hover:fill-red-400 animate-pulse"
+                    onClick={(e) => { e.stopPropagation(); setSelectedSystem(selectedSystem === 'cardiovascular' ? null : 'cardiovascular'); }}
+                  />
+                  {/* Immune System - Thymus area */}
+                  <circle
+                    cx="100" cy="120" r="10"
+                    fill={selectedSystem === 'immune' ? 'rgba(59, 130, 246, 0.8)' : 'rgba(59, 130, 246, 0.3)'}
+                    className="cursor-pointer transition-all hover:fill-blue-400"
+                    onClick={(e) => { e.stopPropagation(); setSelectedSystem(selectedSystem === 'immune' ? null : 'immune'); }}
+                  />
+                  {/* Metabolic - Stomach area */}
+                  <circle
+                    cx="100" cy="155" r="14"
+                    fill={selectedSystem === 'metabolic' ? 'rgba(34, 197, 94, 0.8)' : 'rgba(34, 197, 94, 0.3)'}
+                    className="cursor-pointer transition-all hover:fill-green-400"
+                    onClick={(e) => { e.stopPropagation(); setSelectedSystem(selectedSystem === 'metabolic' ? null : 'metabolic'); }}
+                  />
+                </svg>
+
+                {/* System label */}
+                {selectedSystem && (
+                  <div
+                    className="absolute -right-4 top-1/2 -translate-y-1/2 bg-white/20 backdrop-blur-md rounded-lg p-3 pr-8 text-white text-sm max-w-52 shadow-lg cursor-pointer hover:bg-white/30 transition-colors"
+                    onClick={() => setSelectedSystem(null)}
+                    title="Click to close"
+                  >
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setSelectedSystem(null); }}
+                      className="absolute top-1 right-1 w-6 h-6 bg-white/30 hover:bg-white/50 rounded-full flex items-center justify-center text-white transition-colors"
+                      aria-label="Close"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                    <p className="font-semibold">{healthSystems.find(s => s.id === selectedSystem)?.name}</p>
+                    <p className="text-xs mt-1 text-gray-200">{healthSystems.find(s => s.id === selectedSystem)?.description}</p>
+                    <p className="text-xs mt-2 text-gray-300 italic">Click to dismiss</p>
+                  </div>
+                )}
               </div>
             </div>
+
             {/* Animated particles effect */}
-            <div className="absolute inset-0 opacity-30">
-              {Array.from({ length: 20 }).map((_, i) => (
+            <div className="absolute inset-0 opacity-30 pointer-events-none">
+              {Array.from({ length: 30 }).map((_, i) => (
                 <div
                   key={i}
                   className="absolute w-1 h-1 bg-white rounded-full animate-pulse"
                   style={{
-                    left: `${Math.random() * 100}%`,
-                    top: `${Math.random() * 100}%`,
+                    left: `${10 + Math.random() * 80}%`,
+                    top: `${10 + Math.random() * 80}%`,
                     animationDelay: `${Math.random() * 2}s`,
                   }}
                 ></div>
               ))}
+            </div>
+
+            {/* Instructions overlay */}
+            <div className="absolute bottom-4 left-4 text-white/70 text-xs">
+              Click on body regions to explore systems
             </div>
           </div>
         </CardContent>
@@ -112,7 +274,7 @@ export default function DigitalTwinPage() {
                     ? 'border-blue-500 bg-blue-50'
                     : 'border-gray-200 hover:border-gray-300'
                 }`}
-                onClick={() => setSelectedSystem(system.id)}
+                onClick={() => setSelectedSystem(selectedSystem === system.id ? null : system.id)}
               >
                 <div className="flex items-center justify-between mb-3">
                   <div className="flex items-center">
@@ -292,11 +454,138 @@ export default function DigitalTwinPage() {
             enhance your wellness journey. The simulation suggests maintaining current medication adherence
             while focusing on sleep quality and stress management for optimal outcomes.
           </p>
-          <Button variant="outline" className="w-full">
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={() => setShowChat(true)}
+          >
+            <Bot className="h-4 w-4 mr-2" />
             Chat with AI Health Assistant
           </Button>
         </CardContent>
       </Card>
+
+      {/* AI Chat Modal */}
+      {showChat && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <Card className="w-full max-w-2xl h-[600px] flex flex-col">
+            <CardHeader className="flex-shrink-0 border-b">
+              <CardTitle className="flex items-center justify-between">
+                <span className="flex items-center">
+                  <Bot className="h-5 w-5 mr-2 text-purple-600" />
+                  AI Health Assistant
+                </span>
+                <Button variant="ghost" size="sm" onClick={() => setShowChat(false)}>
+                  <X className="h-5 w-5" />
+                </Button>
+              </CardTitle>
+              <p className="text-sm text-gray-500">Ask questions about your Digital Twin data and health insights</p>
+            </CardHeader>
+            <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
+              <ScrollArea className="flex-1 px-6">
+                <div className="space-y-4 py-4">
+                  {chatMessages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={`flex items-start gap-3 ${
+                        message.role === 'user' ? 'flex-row-reverse' : ''
+                      }`}
+                    >
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                          message.role === 'user'
+                            ? 'bg-green-600'
+                            : 'bg-gradient-to-br from-purple-500 to-pink-500'
+                        }`}
+                      >
+                        {message.role === 'user' ? (
+                          <User className="h-4 w-4 text-white" />
+                        ) : (
+                          <Bot className="h-4 w-4 text-white" />
+                        )}
+                      </div>
+                      <div
+                        className={`max-w-[80%] rounded-lg p-3 ${
+                          message.role === 'user'
+                            ? 'bg-green-600 text-white'
+                            : 'bg-gray-100 text-gray-900'
+                        }`}
+                      >
+                        <p className="text-sm">{message.content}</p>
+                        <p className="text-xs mt-1 opacity-70">
+                          {message.timestamp.toLocaleTimeString([], {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                  {chatLoading && (
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gradient-to-br from-purple-500 to-pink-500">
+                        <Bot className="h-4 w-4 text-white" />
+                      </div>
+                      <div className="bg-gray-100 rounded-lg p-3">
+                        <div className="flex gap-1">
+                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                          <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </ScrollArea>
+              <div className="p-4 border-t flex-shrink-0">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Ask about your health metrics, trends, or recommendations..."
+                    value={chatInput}
+                    onChange={(e) => setChatInput(e.target.value)}
+                    onKeyPress={handleChatKeyPress}
+                    disabled={chatLoading}
+                    className="flex-1"
+                  />
+                  <Button
+                    onClick={handleSendChat}
+                    disabled={chatLoading || !chatInput.trim()}
+                    className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                  >
+                    <Send className="h-4 w-4" />
+                  </Button>
+                </div>
+                <div className="flex gap-2 mt-2 flex-wrap">
+                  <button
+                    onClick={() => setChatInput('How is my immune system?')}
+                    className="text-xs px-2 py-1 bg-blue-100 text-blue-700 rounded-full hover:bg-blue-200 transition"
+                  >
+                    Immune status
+                  </button>
+                  <button
+                    onClick={() => setChatInput('Tell me about my cardiovascular health')}
+                    className="text-xs px-2 py-1 bg-red-100 text-red-700 rounded-full hover:bg-red-200 transition"
+                  >
+                    Heart health
+                  </button>
+                  <button
+                    onClick={() => setChatInput('How can I improve my sleep?')}
+                    className="text-xs px-2 py-1 bg-purple-100 text-purple-700 rounded-full hover:bg-purple-200 transition"
+                  >
+                    Sleep tips
+                  </button>
+                  <button
+                    onClick={() => setChatInput('How is my medication adherence?')}
+                    className="text-xs px-2 py-1 bg-green-100 text-green-700 rounded-full hover:bg-green-200 transition"
+                  >
+                    Medication
+                  </button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   )
 }
