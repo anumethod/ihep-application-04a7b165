@@ -5,6 +5,13 @@ All notable changes to the IHEP Prospectus and related repository files will be 
 ## [Unreleased]
 - Future edits, compliance updates, and structural adjustments.
 
+## [2026-01-04] - Repository consolidation
+### Changed
+- Canonicalized application source under `ihep-application/` (Next.js app, shared components, libs, types, assets, package manifests).
+- Relocated digital-twin dependencies `three.js-master`, `OpenUSD`, and agentic workforce `swarm` into `ihep-application/`; removed redundant root copies.
+- Removed root duplicates of app folders (`src`, `components`, `lib`, `public`, `types`) and package manifests now mirrored inside `ihep-application/`.
+- Left platform-level `workspaces` and `training_datasets` at repo root as shared assets outside the app bundle.
+
 ## [2025-08-24] - Initial Release
 ### Added
 - Created GCP migration architecture with serverless React frontend and BigQuery database
