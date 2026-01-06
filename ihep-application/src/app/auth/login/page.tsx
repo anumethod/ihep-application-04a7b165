@@ -13,6 +13,7 @@ export default function LoginPage() {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [socialLoading, setSocialLoading] = useState<string | null>(null)
   const [error, setError] = useState('')
   const router = useRouter()
 
@@ -42,6 +43,16 @@ export default function LoginPage() {
     }
   }
 
+  const handleSocial = async (provider: 'google' | 'apple') => {
+    if (socialLoading) return
+    setSocialLoading(provider)
+    try {
+      await signIn(provider, { callbackUrl: '/dashboard' })
+    } finally {
+      setSocialLoading(null)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center px-4">
       <Card className="apple-card w-full max-w-md">
@@ -50,7 +61,28 @@ export default function LoginPage() {
           <p className="text-gray-600">Sign in to your IHEP account</p>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="space-y-3">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              disabled={isLoading || !!socialLoading}
+              onClick={() => handleSocial('google')}
+            >
+              {socialLoading === 'google' ? 'Connecting to Google...' : 'Continue with Google'}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              disabled={isLoading || !!socialLoading}
+              onClick={() => handleSocial('apple')}
+            >
+              {socialLoading === 'apple' ? 'Connecting to Apple...' : 'Continue with Apple'}
+            </Button>
+          </div>
+
+          <form onSubmit={handleSubmit} className="space-y-4 mt-6">
             <div className="space-y-2">
               <Label htmlFor="username">Username</Label>
               <Input

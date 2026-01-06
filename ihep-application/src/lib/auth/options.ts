@@ -1,11 +1,31 @@
 import type { NextAuthOptions } from 'next-auth'
 import CredentialsProvider from 'next-auth/providers/credentials'
+import GoogleProvider from 'next-auth/providers/google'
+import AppleProvider from 'next-auth/providers/apple'
 import { mockStore } from '@/lib/mockStore'
 import bcrypt from 'bcryptjs'
+import { generateAppleClientSecret } from './apple-secret'
+
+const requireEnv = (name: string): string => {
+  const value = process.env[name]
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${name}`)
+  }
+  return value
+}
 
 export const authOptions: NextAuthOptions = {
   secret: process.env.SESSION_SECRET,
   providers: [
+    GoogleProvider({
+      clientId: requireEnv('GOOGLE_CLIENT_ID'),
+      clientSecret: requireEnv('GOOGLE_CLIENT_SECRET')
+    }),
+    AppleProvider({
+      clientId: requireEnv('APPLE_CLIENT_ID'),
+      clientSecret: async () => generateAppleClientSecret(),
+      authorization: { params: { scope: 'name email' } }
+    }),
     CredentialsProvider({
       name: 'credentials',
       credentials: {
@@ -35,22 +55,31 @@ export const authOptions: NextAuthOptions = {
   session: { strategy: 'jwt', maxAge: 30 * 60 },
   pages: { signIn: '/login' },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
       if (user) {
-        token.role = (user as any).role
-        token.username = (user as any).username
-        token.firstName = (user as any).firstName
-        token.lastName = (user as any).lastName
+        const fromOAuth = account?.provider && account.provider !== 'credentials'
+        const name = (user as any).name as string | undefined
+        const [firstName, ...rest] = (name ?? '').split(' ').filter(Boolean)
+        token.role = (user as any).role ?? 'patient'
+        token.username = (user as any).username ?? (user as any).email ?? ''
+        token.firstName = (user as any).firstName ?? firstName ?? ''
+        token.lastName = (user as any).lastName ?? rest.join(' ') ?? ''
+        if (fromOAuth && (user as any).email) {
+          ;(token as any).email = (user as any).email
+        }
       }
       return token
     },
     async session({ session, token }) {
       if (session.user) {
         ;(session.user as any).id = token.sub!
-        ;(session.user as any).role = token.role as string
-        ;(session.user as any).username = token.username as string
-        ;(session.user as any).firstName = token.firstName as string
-        ;(session.user as any).lastName = token.lastName as string
+        ;(session.user as any).role = (token as any).role as string
+        ;(session.user as any).username = (token as any).username as string
+        ;(session.user as any).firstName = (token as any).firstName as string
+        ;(session.user as any).lastName = (token as any).lastName as string
+        if ((token as any).email) {
+          session.user.email = (token as any).email as string
+        }
       }
       return session
     }

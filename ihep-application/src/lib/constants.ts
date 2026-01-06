@@ -2,6 +2,8 @@ export const APP_NAME = "Health Insight Ventures";
 
 // Navigation
 export const NAV_ITEMS = [
+  { name: "Home", href: "/" },
+  { name: "Features", href: "/#features" },
   { name: "Resources", href: "/resources" },
   { name: "Events", href: "/events" },
   { name: "Community", href: "/community" },
