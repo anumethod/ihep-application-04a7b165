@@ -3,6 +3,7 @@
 
 import React, { useState } from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import { Users, BookOpen, Activity, Shield, Brain, Menu, X, ChevronRight, Phone, Mail, MapPin, Clock, Heart, Sparkles, Calendar, Loader2 } from 'lucide-react';
@@ -144,6 +145,55 @@ export default function HomePage() {
     }
   };
 
+  // Handle nav clicks for smooth scroll and close mobile menu
+  const handleNavClick = (
+    event: React.MouseEvent<HTMLAnchorElement>,
+    sectionId: string
+  ) => {
+    event.preventDefault();
+    scrollToSection(sectionId);
+    setIsMobileMenuOpen(false);
+  };
+
+  const featureCards = [
+    {
+      icon: Calendar,
+      title: 'Dynamic Calendar',
+      desc: 'Manage telehealth appointments, group meetings, and medication schedules all in one place.',
+      href: '/dashboard/calendar',
+    },
+    {
+      icon: Activity,
+      title: 'Wellness Monitoring',
+      desc: 'Track your health metrics, medication adherence, and care plan progress in real-time.',
+      href: '/dashboard/wellness',
+    },
+    {
+      icon: BookOpen,
+      title: 'Resource Hub',
+      desc: 'Access educational materials, support groups, community programs, and latest research.',
+      href: '/dashboard/resources',
+    },
+    {
+      icon: Brain,
+      title: 'Digital Twin Ecosystem',
+      desc: 'Revolutionary personalized care modeling using AI-powered health simulations.',
+      href: '/dashboard/digital-twin',
+    },
+    {
+      icon: Users,
+      title: 'Financial Empowerment',
+      desc: 'Tools and resources to help you achieve financial stability during your care journey.',
+      href: '/dashboard/financials',
+    },
+    {
+      icon: Shield,
+      title: 'HIPAA Compliant',
+      desc: 'Full PHI/PPI protection with end-to-end encryption and enterprise security.',
+      href: '/legal/compliance',
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-lime-50">
       {/* Navigation Header */}
@@ -166,11 +216,41 @@ export default function HomePage() {
 
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center space-x-8">
-              <a href="#home" className="text-gray-700 hover:text-green-700 transition">Home</a>
-              <a href="#features" className="text-gray-700 hover:text-green-700 transition">Features</a>
-              <a href="#digital-twin" className="text-gray-700 hover:text-green-700 transition">Digital Twin</a>
-              <a href="#about" className="text-gray-700 hover:text-green-700 transition">About</a>
-              <a href="#contact" className="text-gray-700 hover:text-green-700 transition">Contact</a>
+              <a
+                href="#home"
+                onClick={(e) => handleNavClick(e, 'home')}
+                className="text-gray-700 hover:text-green-700 transition"
+              >
+                Home
+              </a>
+              <a
+                href="#features"
+                onClick={(e) => handleNavClick(e, 'features')}
+                className="text-gray-700 hover:text-green-700 transition"
+              >
+                Features
+              </a>
+              <a
+                href="#digital-twin"
+                onClick={(e) => handleNavClick(e, 'digital-twin')}
+                className="text-gray-700 hover:text-green-700 transition"
+              >
+                Digital Twin
+              </a>
+              <a
+                href="#about"
+                onClick={(e) => handleNavClick(e, 'about')}
+                className="text-gray-700 hover:text-green-700 transition"
+              >
+                About
+              </a>
+              <a
+                href="#contact"
+                onClick={(e) => handleNavClick(e, 'contact')}
+                className="text-gray-700 hover:text-green-700 transition"
+              >
+                Contact
+              </a>
               <button
                 onClick={() => setActiveModal('login')}
                 className="px-4 py-2 text-green-700 hover:text-green-800 font-medium transition"
@@ -199,11 +279,41 @@ export default function HomePage() {
         {isMobileMenuOpen && (
           <div className="md:hidden bg-white border-t">
             <div className="px-4 py-2 space-y-2">
-              <a href="#home" className="block py-2 text-gray-700">Home</a>
-              <a href="#features" className="block py-2 text-gray-700">Features</a>
-              <a href="#digital-twin" className="block py-2 text-gray-700">Digital Twin</a>
-              <a href="#about" className="block py-2 text-gray-700">About</a>
-              <a href="#contact" className="block py-2 text-gray-700">Contact</a>
+              <a
+                href="#home"
+                onClick={(e) => handleNavClick(e, 'home')}
+                className="block py-2 text-gray-700"
+              >
+                Home
+              </a>
+              <a
+                href="#features"
+                onClick={(e) => handleNavClick(e, 'features')}
+                className="block py-2 text-gray-700"
+              >
+                Features
+              </a>
+              <a
+                href="#digital-twin"
+                onClick={(e) => handleNavClick(e, 'digital-twin')}
+                className="block py-2 text-gray-700"
+              >
+                Digital Twin
+              </a>
+              <a
+                href="#about"
+                onClick={(e) => handleNavClick(e, 'about')}
+                className="block py-2 text-gray-700"
+              >
+                About
+              </a>
+              <a
+                href="#contact"
+                onClick={(e) => handleNavClick(e, 'contact')}
+                className="block py-2 text-gray-700"
+              >
+                Contact
+              </a>
               <div className="flex gap-2 pt-2">
                 <button
                   onClick={() => {
@@ -278,19 +388,19 @@ export default function HomePage() {
           </p>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { icon: Calendar, title: 'Dynamic Calendar', desc: 'Manage telehealth appointments, group meetings, and medication schedules all in one place.' },
-              { icon: Activity, title: 'Wellness Monitoring', desc: 'Track your health metrics, medication adherence, and care plan progress in real-time.' },
-              { icon: BookOpen, title: 'Resource Hub', desc: 'Access educational materials, support groups, community programs, and latest research.' },
-              { icon: Brain, title: 'Digital Twin Tech', desc: 'Revolutionary personalized care modeling using AI-powered health simulations.' },
-              { icon: Users, title: 'Financial Empowerment', desc: 'Tools and resources to help you achieve financial stability during your care journey.' },
-              { icon: Shield, title: 'HIPAA Compliant', desc: 'Full PHI/PPI protection with end-to-end encryption and enterprise security.' }
-            ].map((feature, idx) => (
-              <div key={idx} className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition cursor-pointer border border-green-100">
-                <feature.icon className="h-12 w-12 text-green-700 mb-4" />
-                <h3 className="text-xl font-semibold mb-2 text-green-800">{feature.title}</h3>
-                <p className="text-gray-600">{feature.desc}</p>
-              </div>
+            {featureCards.map((feature) => (
+              <Link
+                key={feature.title}
+                href={feature.href}
+                className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition cursor-pointer border border-green-100 block"
+                aria-label={`Go to ${feature.title}`}
+              >
+                <div className="text-left">
+                  <feature.icon className="h-12 w-12 text-green-700 mb-4" />
+                  <h3 className="text-xl font-semibold mb-2 text-green-800">{feature.title}</h3>
+                  <p className="text-gray-600">{feature.desc}</p>
+                </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -391,7 +501,7 @@ export default function HomePage() {
                   </div>
                   <div>
                     <p className="font-medium text-green-800">Email</p>
-                    <p className="text-gray-600">support@ihep.care</p>
+                    <p className="text-gray-600">support@ihep.app</p>
                   </div>
                 </div>
                 <div className="flex items-center space-x-3">
@@ -547,7 +657,7 @@ export default function HomePage() {
               <ul className="space-y-2 text-green-200">
                 <li className="flex items-center space-x-2">
                   <Mail className="h-4 w-4" />
-                  <span>support@ihep.care</span>
+                  <span>support@ihep.app</span>
                 </li>
                 <li className="flex items-center space-x-2">
                   <Phone className="h-4 w-4" />

@@ -34,5 +34,6 @@ declare module 'next-auth/jwt' {
     username: string
     firstName: string
     lastName: string
+    email?: string
   }
 }
