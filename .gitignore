@@ -48,6 +48,13 @@ __pycache__/
 .replit
 cookies.txt
 
+# cPanel Deployment
+.env.cpanel
+.env.cpanel.*
+.cpanel-build/
+deployment.log
+*.deploy.log
+
 # Training libraries (cloned repos)
 /training/DeepSpeed/
 /training/bitsandbytes/
