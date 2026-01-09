@@ -67,7 +67,7 @@ click==8.1.7
 requests==2.32.5
 httpx==0.28.1
 tenacity==9.1.2
-aiohttp==3.13.2
+aiohttp>=3.13.3  # Pinned for CVE-2025-69223 (zip bomb), CVE-2025-69226 (path traversal), CVE-2025-69228 (DoS)
 celery==5.6.0
 kombu==5.6.1
 
