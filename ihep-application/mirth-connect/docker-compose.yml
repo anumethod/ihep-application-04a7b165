@@ -1,0 +1,142 @@
+# IHEP Mirth Connect Integration Engine
+# Deployment: Docker Compose for local dev, Cloud Run for production
+#
+# Author: Jason M Jarmacz | Evolution Strategist | jason@ihep.app
+# Co-Author: Claude by Anthropic
+
+version: '3.8'
+
+services:
+  mirth-connect:
+    image: nextgenhealthcare/connect:4.5.0
+    container_name: ihep-mirth-connect
+    ports:
+      - "8080:8080"      # Web dashboard
+      - "8443:8443"      # HTTPS dashboard
+      - "6661:6661"      # HL7 v2.x TCP listener
+      - "6662:6662"      # HL7 v2.x TLS listener
+    environment:
+      - DATABASE=postgres
+      - DATABASE_URL=jdbc:postgresql://postgres:5432/mirthdb
+      - DATABASE_USERNAME=${MIRTH_DB_USER:-mirth}
+      - DATABASE_PASSWORD=${MIRTH_DB_PASSWORD}
+      - DATABASE_MAX_CONNECTIONS=20
+      - VMOPTIONS=-Xmx2048m
+      # Security settings
+      - KEYSTORE_STOREPASS=${MIRTH_KEYSTORE_PASS}
+      - KEYSTORE_KEYPASS=${MIRTH_KEYSTORE_PASS}
+      # GCP integration
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/gcp-service-account.json
+    volumes:
+      - mirth-appdata:/opt/connect/appdata
+      - mirth-custom-lib:/opt/connect/custom-lib
+      - ./channels:/opt/connect/channels:ro
+      - ./transformers:/opt/connect/custom-lib/transformers:ro
+      - ${GCP_CREDENTIALS_PATH:-./credentials}:/app/credentials:ro
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/api/server/status"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+    networks:
+      - ihep-integration
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: ihep-mirth-postgres
+    environment:
+      - POSTGRES_DB=mirthdb
+      - POSTGRES_USER=${MIRTH_DB_USER:-mirth}
+      - POSTGRES_PASSWORD=${MIRTH_DB_PASSWORD}
+    volumes:
+      - mirth-postgres-data:/var/lib/postgresql/data
+      - ./init-scripts:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${MIRTH_DB_USER:-mirth} -d mirthdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - ihep-integration
+
+  # Redis for channel state caching and rate limiting
+  redis:
+    image: redis:7-alpine
+    container_name: ihep-mirth-redis
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - mirth-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "--pass", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - ihep-integration
+
+  # IHEP Integration Gateway (Flask service)
+  integration-gateway:
+    build:
+      context: ../applications/backend/integration-gateway
+      dockerfile: Dockerfile
+    container_name: ihep-integration-gateway
+    ports:
+      - "8090:8090"
+    environment:
+      - FLASK_ENV=${FLASK_ENV:-development}
+      - MIRTH_API_URL=http://mirth-connect:8080/api
+      - MIRTH_API_USER=${MIRTH_API_USER:-admin}
+      - MIRTH_API_PASSWORD=${MIRTH_API_PASSWORD}
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/0
+      - GCP_PROJECT=${GCP_PROJECT}
+      - GCP_LOCATION=${GCP_LOCATION:-us-central1}
+      - HEALTHCARE_DATASET=${HEALTHCARE_DATASET}
+      - FHIR_STORE=${FHIR_STORE}
+      - BIGQUERY_AUDIT_TABLE=${BIGQUERY_AUDIT_TABLE}
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/gcp-service-account.json
+      # EHR Credentials (from Secret Manager in production)
+      - EPIC_CLIENT_ID=${EPIC_CLIENT_ID}
+      - EPIC_CLIENT_SECRET=${EPIC_CLIENT_SECRET}
+      - CERNER_CLIENT_ID=${CERNER_CLIENT_ID}
+      - CERNER_CLIENT_SECRET=${CERNER_CLIENT_SECRET}
+      - ALLSCRIPTS_API_KEY=${ALLSCRIPTS_API_KEY}
+      - ATHENA_CLIENT_ID=${ATHENA_CLIENT_ID}
+      - ATHENA_CLIENT_SECRET=${ATHENA_CLIENT_SECRET}
+    volumes:
+      - ${GCP_CREDENTIALS_PATH:-./credentials}:/app/credentials:ro
+      - ../config/ehr-partners:/app/config/ehr-partners:ro
+    depends_on:
+      mirth-connect:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8090/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - ihep-integration
+
+volumes:
+  mirth-appdata:
+    driver: local
+  mirth-custom-lib:
+    driver: local
+  mirth-postgres-data:
+    driver: local
+  mirth-redis-data:
+    driver: local
+
+networks:
+  ihep-integration:
+    driver: bridge
+    name: ihep-integration-network

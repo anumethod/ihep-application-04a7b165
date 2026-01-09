@@ -1,6 +1,6 @@
 # IHEP Project TODO
 
-Last Updated: December 26, 2024 (Session 6)
+Last Updated: January 8, 2026 (Session 7 - EHR Integration)
 
 ## Completed Tasks
 
@@ -48,6 +48,35 @@ Last Updated: December 26, 2024 (Session 6)
 - [x] Add body system status cards with popup details
 
 ## High Priority
+
+### EHR Integration (IN PROGRESS - Session 7)
+**Architecture: Mirth Connect + Custom Adapters**
+**Plan file:** `/Users/nexus1/.claude/plans/keen-humming-parasol.md`
+
+#### Completed
+- [x] Architecture plan designed and approved
+- [x] Mirth Connect Docker deployment (`ihep-application/mirth-connect/docker-compose.yml`)
+- [x] Base adapter interface (`adapters/base_adapter.py`)
+- [x] Adapter registry (`adapters/__init__.py`)
+- [x] Epic SMART on FHIR adapter (`adapters/epic_adapter.py`)
+- [x] Cerner OAuth 2.0 adapter (`adapters/cerner_adapter.py`)
+- [x] Allscripts API Key adapter (`adapters/allscripts_adapter.py`)
+- [x] athenahealth OAuth 2.0 adapter (`adapters/athena_adapter.py`)
+- [x] Directory structure created for all modules
+
+#### Remaining - High Priority
+- [ ] HL7 v2.x adapter (`adapters/hl7v2_adapter.py`) - Parse ADT/ORU/SIU messages
+- [ ] FHIR normalizer (`transformers/fhir_normalizer.py`)
+- [ ] IHEP canonical schemas (`data/fhir-transformers/schemas/*.json`)
+- [ ] Partner config templates (`config/ehr-partners/`)
+- [ ] Webhook handler (`webhooks/handler.py`)
+- [ ] Bidirectional sync service (`sync/bidirectional_sync.py`)
+- [ ] Integration Gateway Flask app (`app.py` + Dockerfile)
+
+#### Remaining - Medium Priority
+- [ ] Mirth Connect channel configs (XML)
+- [ ] Mirth JavaScript transformers
+- [ ] Terraform module for Mirth infrastructure
 
 ### Digital Twin 3D Integration (BLOCKED - Session 6)
 - [x] Install Three.js dependency (`npm install three @types/three`)

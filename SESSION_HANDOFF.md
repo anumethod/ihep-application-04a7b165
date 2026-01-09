@@ -1,89 +1,151 @@
-# Session Handoff - December 26, 2024 (Session 6 - FAILED)
-
-## CRITICAL: Session ended with unresolved Turbopack/Three.js bundling issue
-
-The user is frustrated. Multiple context windows were wasted going in circles. The next agent must take a different approach.
+# Session Handoff - January 8, 2026 (Session 7 - EHR Integration)
 
 ## What Was Accomplished
 
-1. **Added project attribution to CLAUDE.md**
-   - Author: Jason M Jarmacz | Evolution Strategist | jason@ihep.app
-   - Co-Author: Claude by Anthropic
+### EHR Integration Architecture Designed and Partially Implemented
 
-2. **Fixed 2D/3D toggle button** - Changed from shadcn Button component to plain HTML buttons (shadcn Button was mysteriously not rendering)
+1. **Architecture Plan Created** - Full plan at `/Users/nexus1/.claude/plans/keen-humming-parasol.md`
+   - Platform: Mirth Connect (open-source, self-hosted)
+   - EHR Vendors: Epic, Cerner, Allscripts, athenahealth
+   - Data Flow: Bidirectional sync + real-time webhooks
+   - Protocols: FHIR R4, HL7 v2.x, CCD-A
 
-3. **Fixed 2D/3D mode swap** - The visualization conditions were inverted
+2. **Files Created This Session:**
 
-4. **Disabled USDZ loader temporarily** - Was causing "invalid zip data" errors
+   **Mirth Connect Configuration:**
+   - `ihep-application/mirth-connect/docker-compose.yml` - Mirth + PostgreSQL + Redis + Integration Gateway
 
-## UNRESOLVED: Turbopack + Three.js Bundling Error
+   **Integration Gateway Adapters:**
+   - `ihep-application/applications/backend/integration-gateway/adapters/__init__.py` - Adapter registry
+   - `ihep-application/applications/backend/integration-gateway/adapters/base_adapter.py` - Abstract base class with full interface
+   - `ihep-application/applications/backend/integration-gateway/adapters/epic_adapter.py` - SMART on FHIR (complete)
+   - `ihep-application/applications/backend/integration-gateway/adapters/cerner_adapter.py` - OAuth 2.0 + FHIR (complete)
+   - `ihep-application/applications/backend/integration-gateway/adapters/allscripts_adapter.py` - API Key auth (complete)
+   - `ihep-application/applications/backend/integration-gateway/adapters/athena_adapter.py` - OAuth 2.0 (complete)
 
-```
-Runtime Error
-Module [project]/node_modules/three/build/three.core.js [app-client] (ecmascript)
-was instantiated because it was required from module
-[project]/src/components/digital-twin/IHEPDigitalTwinRenderer.ts [app-client] (ecmascript),
-but the module factory is not available. It might have been deleted in an HMR update.
-```
+3. **Directories Created:**
+   - `ihep-application/mirth-connect/channels/`
+   - `ihep-application/mirth-connect/transformers/`
+   - `ihep-application/applications/backend/integration-gateway/adapters/`
+   - `ihep-application/applications/backend/integration-gateway/transformers/`
+   - `ihep-application/applications/backend/integration-gateway/webhooks/`
+   - `ihep-application/applications/backend/integration-gateway/sync/`
+   - `ihep-application/data/fhir-transformers/schemas/`
+   - `ihep-application/data/fhir-transformers/mappings/`
+   - `ihep-application/data/fhir-transformers/validators/`
+   - `ihep-application/config/ehr-partners/templates/`
+   - `ihep-application/infrastructure/modules/mirth-connect/`
 
-### What Was Tried (ALL FAILED)
-1. Downgrading Three.js to 0.166.0 (compatible with three-usdz-loader) - bundling error
-2. Upgrading Three.js to latest - bundling error
-3. Adding `transpilePackages: ['three']` to next.config.mjs - no effect
-4. Trying to disable Turbopack with `experimental: { turbo: false }` - invalid option
-5. Clearing .next cache multiple times - no effect
-6. Reinstalling node_modules - no effect
+## Files Still Needed (Per Plan)
 
-### Root Cause Analysis
-- Next.js 16.1.1 uses Turbopack by default
-- Turbopack has issues bundling Three.js modules
-- The error references `three/build/three.core.js` which doesn't exist in newer Three.js versions
-- This appears to be a known Turbopack incompatibility
+### High Priority - Needed to Complete Phase 1
 
-### Potential Solutions NOT YET TRIED
-1. **Use webpack instead of Turbopack** - Need to find the correct Next.js 16 config to disable Turbopack
-2. **Dynamic import Three.js differently** - Maybe import from specific submodules instead of `import * as THREE from 'three'`
-3. **Use a CDN version of Three.js** - Bypass bundling entirely
-4. **Downgrade Next.js** - Use a version that doesn't default to Turbopack
-5. **Use the simpler DigitalTwinCanvas component** - This was working but user rejected it as "hack ass cut rate second class tools"
+1. **HL7 v2.x Adapter** - `adapters/hl7v2_adapter.py`
+   - Parse ADT, ORU, SIU messages
+   - Convert to FHIR R4 resources
 
-## Current File State
+2. **FHIR Normalizer** - `transformers/fhir_normalizer.py`
+   - Normalize vendor FHIR variants to IHEP canonical format
 
-### src/app/dashboard/digital-twin/page.tsx
-- Uses plain HTML buttons (not shadcn Button) for 3D/2D toggle
-- Condition: `{use3DViewer ? (DigitalTwinViewer) : (SVG 2D visualization)}`
-- Dynamic imports DigitalTwinViewer with SSR disabled
+3. **IHEP Canonical Schemas** (JSON Schema):
+   - `data/fhir-transformers/schemas/ihep_patient.json`
+   - `data/fhir-transformers/schemas/ihep_observation.json`
+   - `data/fhir-transformers/schemas/ihep_appointment.json`
 
-### src/components/digital-twin/IHEPDigitalTwinRenderer.ts
-- USDZ loader import commented out (was causing errors)
-- loadUSDScene() function stubbed out
-- Uses `import * as THREE from 'three'` - THIS MAY BE THE PROBLEM
+4. **Partner Configuration Templates**:
+   - `config/ehr-partners/partner_registry.yaml`
+   - `config/ehr-partners/templates/new_partner.yaml`
 
-### next.config.mjs
-- Has `transpilePackages: ['three']`
-- Has empty webpack config
+5. **Webhook Handler** - `webhooks/handler.py`
+   - Process incoming EHR events
+   - Route to appropriate handlers
 
-### Package versions
-- three: latest (was 0.182.0, then 0.166.0, now latest again)
-- three-usdz-loader: 1.0.9 (requires three ^0.166.0 - version mismatch)
-- Next.js: 16.1.1 (Turbopack default)
+6. **Bidirectional Sync Service** - `sync/bidirectional_sync.py`
+   - Orchestrate inbound and outbound data sync
 
-## Files Modified This Session
-- CLAUDE.md - Added attribution
-- src/app/dashboard/digital-twin/page.tsx - Button fixes, mode swap fix
-- src/components/digital-twin/IHEPDigitalTwinRenderer.ts - Disabled USDZ loader
-- src/app/globals.css - Added webkit-backdrop-filter prefixes
-- next.config.mjs - Added transpilePackages
+7. **Integration Gateway Flask App** - `app.py`
+   - Main entry point with API routes
+   - Dockerfile for the service
 
-## User Expectations
-The user wants:
-1. Three.js + OpenUSD working properly (not a "hack" solution)
-2. 3D humanoid visualization with controls
-3. Proper attribution on commits
+### Medium Priority - Mirth Connect Channels
 
-## Recommended Approach for Next Agent
-1. Research Turbopack + Three.js compatibility issues
-2. Find proper way to use webpack in Next.js 16.1.1
-3. Or find Three.js import pattern that works with Turbopack
-4. Test incrementally, don't make multiple changes at once
-5. Keep the user informed and don't waste context on circular debugging
+8. **Mirth Channel Configs** (XML):
+   - `mirth-connect/channels/epic_inbound.xml`
+   - `mirth-connect/channels/cerner_inbound.xml`
+   - `mirth-connect/channels/hl7v2_listener.xml`
+   - `mirth-connect/channels/webhook_receiver.xml`
+   - `mirth-connect/channels/outbound_sync.xml`
+
+9. **Mirth JavaScript Transformers**:
+   - `mirth-connect/transformers/fhir_to_ihep.js`
+   - `mirth-connect/transformers/hl7v2_to_fhir.js`
+
+### Low Priority - Infrastructure
+
+10. **Terraform Module**:
+    - `infrastructure/modules/mirth-connect/main.tf`
+    - `infrastructure/modules/mirth-connect/variables.tf`
+
+## Key Technical Decisions Made
+
+1. **Mirth Connect over Redox** - User chose open-source self-hosted solution for full control and no per-transaction fees
+
+2. **All Major Vendors Simultaneously** - Epic, Cerner, Allscripts, athenahealth all at once
+
+3. **All Data Patterns** - Bidirectional sync + real-time webhooks + bulk fetch
+
+4. **Adapter Interface** - Abstract base class in `base_adapter.py` defines:
+   - Authentication methods
+   - Patient, Observation, Appointment, CarePlan, Condition, Medication operations
+   - Subscription management
+   - Bulk fetch capabilities
+   - Health check
+
+## Implementation Notes
+
+### BaseEHRAdapter Interface
+All adapters implement these abstract methods:
+- `authenticate()` - OAuth/API key auth
+- `refresh_token()` - Token refresh
+- `fetch_patient()`, `search_patients()`
+- `fetch_observations()`, `push_observation()`
+- `fetch_appointments()`, `create_appointment()`
+- `fetch_care_plans()`, `fetch_conditions()`, `fetch_medications()`
+- `subscribe_to_events()`, `unsubscribe()`
+- `bulk_fetch()`, `health_check()`
+
+### Epic Adapter (Most Complete)
+- SMART on FHIR with PKCE
+- OAuth 2.0 authorization code + client credentials flows
+- Endpoint discovery from metadata
+- Rate limit handling
+- Full audit logging
+
+### Cost Analysis (From Plan)
+- Mirth Connect Setup: $20K-40K initial, $15K-25K/year
+- Epic App Orchard: $50K-100K initial, $10K-20K/year
+- Cerner Code: $40K-80K initial, $10K-15K/year
+- Allscripts: $30K-50K initial, $8K-12K/year
+- athenahealth: $25K-40K initial, $8K-12K/year
+- **Total: $170K-320K initial, $63K-108K/year**
+
+## For Next Agent
+
+1. Continue creating the remaining files from the plan
+2. Start with HL7 v2.x adapter since it's the last major adapter
+3. Then create FHIR schemas and partner config templates
+4. Finally create the main Flask app entry point
+
+## User Preferences Confirmed
+
+- Platform: Mirth Connect
+- Vendors: All major (Epic, Cerner, Allscripts, athenahealth)
+- Data patterns: All (bidirectional + webhooks)
+- No emojis in output
+- Mathematical verification required for algorithms
+
+## Files Modified/Created Count
+
+- 7 files created
+- 12 directories created
+- 0 files modified

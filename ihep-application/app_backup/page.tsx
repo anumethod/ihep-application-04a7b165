@@ -145,7 +145,7 @@ export default function HomePage() {
               { icon: Calendar, title: 'Dynamic Calendar', desc: 'Manage telehealth appointments, group meetings, and medication schedules all in one place.' },
               { icon: Activity, title: 'Wellness Monitoring', desc: 'Track your health metrics, medication adherence, and care plan progress in real-time.' },
               { icon: BookOpen, title: 'Resource Hub', desc: 'Access educational materials, support groups, community programs, and latest research.' },
-              { icon: Brain, title: 'Digital Twin Tech', desc: 'Revolutionary personalized care modeling using AI-powered health simulations.' },
+              { icon: Brain, title: 'Digital Twin Ecosystem', desc: 'Revolutionary personalized care modeling using AI-powered health simulations.' },
               { icon: Users, title: 'Financial Empowerment', desc: 'Tools and resources to help you achieve financial stability during your care journey.' },
               { icon: Shield, title: 'HIPAA Compliant', desc: 'Full PHI/PPI protection with end-to-end encryption and enterprise security.' }
             ].map((feature, idx) => (
@@ -273,7 +273,7 @@ export default function HomePage() {
               <ul className="space-y-2 text-green-200">
                 <li className="flex items-center space-x-2">
                   <Mail className="h-4 w-4" />
-                  <span>support@ihep.care</span>
+                  <span>support@ihep.app</span>
                 </li>
                 <li className="flex items-center space-x-2">
                   <Phone className="h-4 w-4" />

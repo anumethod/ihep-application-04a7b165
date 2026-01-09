@@ -4,16 +4,16 @@ import bcrypt from 'bcryptjs'
 import { mockStore } from '@/lib/mockStore'
 
 const insertUserSchema = z.object({
-  username: z.string().min(3),
+  username: z.string().min(3, 'Username must be at least 3 characters'),
   password: z.string()
     .min(12, 'Password must be at least 12 characters')
     .regex(
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
-      'Password must contain uppercase, lowercase, number, and special character (@$!%*?&)'
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]+$/,
+      'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character (@$!%*?&)'
     ),
-  email: z.string().email(),
-  firstName: z.string().min(1),
-  lastName: z.string().min(1),
+  email: z.string().email('Please enter a valid email address'),
+  firstName: z.string().min(1, 'First name is required'),
+  lastName: z.string().min(1, 'Last name is required'),
   role: z.string().default('patient'),
   profilePicture: z.string().optional(),
   phone: z.string().optional(),
@@ -63,8 +63,16 @@ export async function POST(request: NextRequest) {
     )
   } catch (error) {
     if (error instanceof z.ZodError) {
+      // Format Zod errors into user-friendly messages
+      const formattedErrors = error.issues.map((issue) => {
+        const field = issue.path.join('.')
+        return `${field}: ${issue.message}`
+      })
       return NextResponse.json(
-        { message: "Invalid data", errors: error.issues },
+        {
+          message: formattedErrors.join('; '),
+          errors: error.issues
+        },
         { status: 400 }
       )
     }
