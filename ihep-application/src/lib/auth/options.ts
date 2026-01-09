@@ -4,6 +4,7 @@ import GoogleProvider from 'next-auth/providers/google'
 // import AppleProvider from 'next-auth/providers/apple'
 import { mockStore } from '@/lib/mockStore'
 import bcrypt from 'bcryptjs'
+<<<<<<< HEAD
 // import { generateAppleClientSecret } from './apple-secret'
 
 export const authOptions: NextAuthOptions = {
@@ -70,6 +71,61 @@ export const authOptions: NextAuthOptions = {
 
     return providers
   })(),
+=======
+
+const requireEnv = (name: string): string => {
+  const value = process.env[name]
+  if (!value) {
+    // During build time (NODE_ENV=production without actual env vars), provide dummy values
+    // to allow build to succeed. Runtime will still require actual values.
+    if (process.env.NODE_ENV === 'production' && !process.env.VERCEL && !process.env.GOOGLE_CLIENT_ID) {
+      console.warn(`Missing environment variable: ${name} (using dummy value for build)`)
+      return `dummy-${name.toLowerCase()}`
+    }
+    throw new Error(`Missing required environment variable: ${name}`)
+  }
+  return value
+}
+
+export const authOptions: NextAuthOptions = {
+  secret: process.env.SESSION_SECRET,
+  providers: [
+    GoogleProvider({
+      clientId: requireEnv('GOOGLE_CLIENT_ID'),
+      clientSecret: requireEnv('GOOGLE_CLIENT_SECRET')
+    }),
+    AppleProvider({
+      clientId: requireEnv('APPLE_CLIENT_ID'),
+      clientSecret: requireEnv('APPLE_CLIENT_SECRET'),
+      authorization: { params: { scope: 'name email' } }
+    }),
+    CredentialsProvider({
+      name: 'credentials',
+      credentials: {
+        username: { label: 'Username', type: 'text' },
+        password: { label: 'Password', type: 'password' }
+      },
+      async authorize(credentials) {
+        if (!credentials?.username || !credentials?.password) return null
+        const user = await mockStore.getUserByUsername(credentials.username)
+        if (!user) return null
+        const ok = await bcrypt.compare(credentials.password, user.password)
+        if (!ok) return null
+        return {
+          id: String(user.id),
+          username: user.username,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          role: user.role,
+          profilePicture: user.profilePicture ?? undefined,
+          phone: user.phone ?? undefined,
+          preferredContactMethod: user.preferredContactMethod ?? undefined
+        } as any
+      }
+    })
+  ],
+>>>>>>> 3be25d7cec835bf0c1b71522d4afe4a9a16b2778
   session: { strategy: 'jwt', maxAge: 30 * 60 },
   pages: { signIn: '/login' },
   callbacks: {
