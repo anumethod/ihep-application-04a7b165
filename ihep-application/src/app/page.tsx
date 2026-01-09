@@ -155,36 +155,39 @@ export default function HomePage() {
     setIsMobileMenuOpen(false);
   };
 
+  const withLoginRedirect = (path: string) =>
+    `/login?callbackUrl=${encodeURIComponent(path)}`
+
   const featureCards = [
     {
       icon: Calendar,
       title: 'Dynamic Calendar',
       desc: 'Manage telehealth appointments, group meetings, and medication schedules all in one place.',
-      href: '/dashboard/calendar',
+      href: withLoginRedirect('/dashboard/calendar'),
     },
     {
       icon: Activity,
       title: 'Wellness Monitoring',
       desc: 'Track your health metrics, medication adherence, and care plan progress in real-time.',
-      href: '/dashboard/wellness',
+      href: withLoginRedirect('/dashboard/wellness'),
     },
     {
       icon: BookOpen,
       title: 'Resource Hub',
       desc: 'Access educational materials, support groups, community programs, and latest research.',
-      href: '/dashboard/resources',
+      href: '/resources',
     },
     {
       icon: Brain,
       title: 'Digital Twin Ecosystem',
       desc: 'Revolutionary personalized care modeling using AI-powered health simulations.',
-      href: '/dashboard/digital-twin',
+      href: withLoginRedirect('/dashboard/digital-twin'),
     },
     {
       icon: Users,
       title: 'Financial Empowerment',
       desc: 'Tools and resources to help you achieve financial stability during your care journey.',
-      href: '/dashboard/financials',
+      href: withLoginRedirect('/dashboard/financials'),
     },
     {
       icon: Shield,

@@ -43,7 +43,12 @@ export default function SignupPage() {
       if (response.ok) {
         router.push('/auth/login?message=Registration successful, please log in')
       } else {
-        setError(data.message || 'Registration failed')
+        // Show detailed validation errors if available
+        if (data.errors && Array.isArray(data.errors)) {
+          setError(data.errors.map((e: { message: string }) => e.message).join(', '))
+        } else {
+          setError(data.message || 'Registration failed')
+        }
       }
     } catch (error) {
       setError('An error occurred during registration')
@@ -118,7 +123,11 @@ export default function SignupPage() {
                 value={formData.password}
                 onChange={(e) => handleInputChange('password', e.target.value)}
                 required
+                minLength={12}
               />
+              <p className="text-xs text-gray-500">
+                Min 12 characters. Must include uppercase, lowercase, number, and special character (@$!%*?&)
+              </p>
             </div>
 
             <div className="space-y-2">
