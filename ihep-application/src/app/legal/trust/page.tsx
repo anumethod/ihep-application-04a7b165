@@ -27,8 +27,8 @@ export default function TrustStatementPage() {
       <h2>1. Core Trust Principles</h2>
 
       <h3>1.1 You Own Your Data</h3>
-      <div className="bg-green-50 border border-green-200 rounded-md p-4 my-4">
-        <p className="font-bold text-green-900">
+      <div className="bg-teal-50 border border-teal-200 rounded-md p-4 my-4">
+        <p className="font-bold text-teal-900">
           Your health data belongs to you, period.
         </p>
         <p className="text-sm mt-2">

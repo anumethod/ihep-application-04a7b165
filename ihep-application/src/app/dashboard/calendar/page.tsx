@@ -334,9 +334,9 @@ export default function CalendarPage() {
                           }}
                           className={`text-center p-2 rounded-full transition-colors ${
                             isToday
-                              ? 'bg-green-600 text-white hover:bg-green-700'
+                              ? 'bg-teal-600 text-white hover:bg-teal-700'
                               : isSelected
-                              ? 'bg-green-100 text-green-800 font-medium ring-2 ring-green-500'
+                              ? 'bg-teal-100 text-teal-800 font-medium ring-2 ring-teal-500'
                               : hasAppointment
                               ? 'bg-blue-500 text-white hover:bg-blue-600'
                               : 'hover:bg-gray-100'
@@ -352,11 +352,11 @@ export default function CalendarPage() {
               </div>
               <div className="text-xs text-gray-600 space-y-1">
                 <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full bg-green-600 mr-2"></div>
+                  <div className="w-3 h-3 rounded-full bg-teal-600 mr-2"></div>
                   <span>Today</span>
                 </div>
                 <div className="flex items-center">
-                  <div className="w-3 h-3 rounded-full bg-green-100 ring-2 ring-green-500 mr-2"></div>
+                  <div className="w-3 h-3 rounded-full bg-teal-100 ring-2 ring-teal-500 mr-2"></div>
                   <span>Selected</span>
                 </div>
                 <div className="flex items-center">
@@ -413,7 +413,7 @@ export default function CalendarPage() {
                     <span
                       className={`px-2 py-1 text-xs rounded-full ${
                         appointment.type === 'telehealth'
-                          ? 'bg-green-100 text-green-700'
+                          ? 'bg-teal-100 text-green-700'
                           : 'bg-blue-100 text-blue-700'
                       }`}
                     >
