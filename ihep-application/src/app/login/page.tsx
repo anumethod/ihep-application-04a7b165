@@ -54,7 +54,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-lime-50 flex items-center justify-center px-4">
+    <div className="min-h-screen bg-stone-50 flex items-center justify-center px-4">
       <Card className="apple-card w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold gradient-text">Welcome Back</CardTitle>

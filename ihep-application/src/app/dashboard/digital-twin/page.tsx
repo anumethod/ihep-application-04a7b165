@@ -173,7 +173,7 @@ export default function DigitalTwinPage() {
                 }}
                 className={`px-4 py-2 rounded-md text-sm font-medium ${
                   use3DViewer
-                    ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white'
+                    ? 'bg-gradient-to-r from-teal-600 to-teal-500 text-white'
                     : 'border border-gray-300 bg-white hover:bg-gray-50'
                 }`}
               >
@@ -415,7 +415,7 @@ export default function DigitalTwinPage() {
                     {Array.from({ length: 30 }).map((_, i) => (
                       <div
                         key={i}
-                        className="w-1 bg-green-600 rounded-t"
+                        className="w-1 bg-teal-600 rounded-t"
                         style={{ height: `${70 + Math.random() * 30}%` }}
                       ></div>
                     ))}
@@ -546,7 +546,7 @@ export default function DigitalTwinPage() {
                       <div
                         className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
                           message.role === 'user'
-                            ? 'bg-green-600'
+                            ? 'bg-teal-600'
                             : 'bg-gradient-to-br from-purple-500 to-pink-500'
                         }`}
                       >
@@ -559,7 +559,7 @@ export default function DigitalTwinPage() {
                       <div
                         className={`max-w-[80%] rounded-lg p-3 ${
                           message.role === 'user'
-                            ? 'bg-green-600 text-white'
+                            ? 'bg-teal-600 text-white'
                             : 'bg-gray-100 text-gray-900'
                         }`}
                       >
@@ -602,7 +602,7 @@ export default function DigitalTwinPage() {
                   <Button
                     onClick={handleSendChat}
                     disabled={chatLoading || !chatInput.trim()}
-                    className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700"
+                    className="bg-gradient-to-r from-teal-600 to-teal-500 hover:from-teal-700 hover:to-teal-600"
                   >
                     <Send className="h-4 w-4" />
                   </Button>
