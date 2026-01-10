@@ -1,885 +1,333 @@
-// src/app/page.tsx - Main Landing Page Component
+// src/app/page.tsx - Investor Relations Landing Page
 'use client';
 
 import React, { useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { signIn } from 'next-auth/react';
-import { Users, BookOpen, Activity, Shield, Brain, Menu, X, ChevronRight, Phone, Mail, MapPin, Clock, Heart, Sparkles, Calendar, Loader2 } from 'lucide-react';
 
-// Main App Component
-export default function HomePage() {
-  const router = useRouter();
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [activeModal, setActiveModal] = useState<'login' | 'signup' | null>(null);
+export default function InvestorLandingPage() {
+  const [email, setEmail] = useState('');
+  const [subscribed, setSubscribed] = useState(false);
 
-  // Login form state
-  const [loginData, setLoginData] = useState({ username: '', password: '' });
-  const [loginError, setLoginError] = useState('');
-  const [loginLoading, setLoginLoading] = useState(false);
-
-  // Signup form state
-  const [signupData, setSignupData] = useState({
-    firstName: '',
-    lastName: '',
-    username: '',
-    email: '',
-    password: '',
-    phone: '',
-    agreeToTerms: false
-  });
-  const [signupError, setSignupError] = useState('');
-  const [signupLoading, setSignupLoading] = useState(false);
-
-  // Contact form state
-  const [contactData, setContactData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    message: ''
-  });
-  const [contactSubmitted, setContactSubmitted] = useState(false);
-  const [contactLoading, setContactLoading] = useState(false);
-
-  // Handle contact form submission
-  const handleContactSubmit = async (e: React.FormEvent) => {
+  const handleNewsletterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setContactLoading(true);
-    // Simulate form submission (replace with actual API call)
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    setContactSubmitted(true);
-    setContactLoading(false);
-    setContactData({ name: '', email: '', subject: '', message: '' });
+    // In production, integrate with email service
+    setSubscribed(true);
+    setEmail('');
   };
-
-  // Handle login submission
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoginError('');
-    setLoginLoading(true);
-
-    try {
-      const result = await signIn('credentials', {
-        username: loginData.username,
-        password: loginData.password,
-        redirect: false
-      });
-
-      if (result?.error) {
-        setLoginError('Invalid username or password');
-      } else {
-        setActiveModal(null);
-        router.push('/dashboard');
-      }
-    } catch {
-      setLoginError('An error occurred during login');
-    } finally {
-      setLoginLoading(false);
-    }
-  };
-
-  // Handle signup submission
-  const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSignupError('');
-
-    if (!signupData.agreeToTerms) {
-      setSignupError('You must agree to the Terms of Service and Privacy Policy');
-      return;
-    }
-
-    setSignupLoading(true);
-
-    try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          username: signupData.username,
-          password: signupData.password,
-          email: signupData.email,
-          firstName: signupData.firstName,
-          lastName: signupData.lastName,
-          phone: signupData.phone || undefined,
-          role: 'patient'
-        })
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        // Auto-login after successful registration
-        const loginResult = await signIn('credentials', {
-          username: signupData.username,
-          password: signupData.password,
-          redirect: false
-        });
-
-        if (loginResult?.error) {
-          setActiveModal('login');
-          setLoginData({ username: signupData.username, password: '' });
-        } else {
-          setActiveModal(null);
-          router.push('/dashboard');
-        }
-      } else {
-        if (data.errors && Array.isArray(data.errors)) {
-          setSignupError(data.errors.map((e: { message: string }) => e.message).join(', '));
-        } else {
-          setSignupError(data.message || 'Registration failed');
-        }
-      }
-    } catch {
-      setSignupError('An error occurred during registration');
-    } finally {
-      setSignupLoading(false);
-    }
-  };
-
-  // Scroll to section
-  const scrollToSection = (sectionId: string) => {
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
-  // Handle nav clicks for smooth scroll and close mobile menu
-  const handleNavClick = (
-    event: React.MouseEvent<HTMLAnchorElement>,
-    sectionId: string
-  ) => {
-    event.preventDefault();
-    scrollToSection(sectionId);
-    setIsMobileMenuOpen(false);
-  };
-
-  const withLoginRedirect = (path: string) =>
-    `/login?callbackUrl=${encodeURIComponent(path)}`
-
-  const featureCards = [
-    {
-      icon: Calendar,
-      title: 'Dynamic Calendar',
-      desc: 'Manage telehealth appointments, group meetings, and medication schedules all in one place.',
-      href: withLoginRedirect('/dashboard/calendar'),
-    },
-    {
-      icon: Activity,
-      title: 'Wellness Monitoring',
-      desc: 'Track your health metrics, medication adherence, and care plan progress in real-time.',
-      href: withLoginRedirect('/dashboard/wellness'),
-    },
-    {
-      icon: BookOpen,
-      title: 'Resource Hub',
-      desc: 'Access educational materials, support groups, community programs, and latest research.',
-      href: '/resources',
-    },
-    {
-      icon: Brain,
-      title: 'Digital Twin Ecosystem',
-      desc: 'Revolutionary personalized care modeling using AI-powered health simulations.',
-      href: withLoginRedirect('/dashboard/digital-twin'),
-    },
-    {
-      icon: Users,
-      title: 'Financial Empowerment',
-      desc: 'Tools and resources to help you achieve financial stability during your care journey.',
-      href: withLoginRedirect('/dashboard/financials'),
-    },
-    {
-      icon: Shield,
-      title: 'HIPAA Compliant',
-      desc: 'Full PHI/PPI protection with end-to-end encryption and enterprise security.',
-      href: '/legal/compliance',
-    },
-  ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-lime-50">
-      {/* Navigation Header */}
-      <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-lg shadow-lg">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo */}
-            <div className="flex items-center space-x-2">
-              <Image
-                src="/assets/logo.png"
-                alt="IHEP Logo"
-                width={40}
-                height={40}
-                className="h-10 w-10"
-              />
-              <span className="text-xl font-bold bg-gradient-to-r from-green-700 to-emerald-600 bg-clip-text text-transparent">
-                IHEP
-              </span>
-            </div>
-
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-8">
-              <a
-                href="#home"
-                onClick={(e) => handleNavClick(e, 'home')}
-                className="text-gray-700 hover:text-green-700 transition"
-              >
-                Home
-              </a>
-              <a
-                href="#features"
-                onClick={(e) => handleNavClick(e, 'features')}
-                className="text-gray-700 hover:text-green-700 transition"
-              >
-                Features
-              </a>
-              <a
-                href="#digital-twin"
-                onClick={(e) => handleNavClick(e, 'digital-twin')}
-                className="text-gray-700 hover:text-green-700 transition"
-              >
-                Digital Twin
-              </a>
-              <a
-                href="#about"
-                onClick={(e) => handleNavClick(e, 'about')}
-                className="text-gray-700 hover:text-green-700 transition"
-              >
-                About
-              </a>
-              <a
-                href="#contact"
-                onClick={(e) => handleNavClick(e, 'contact')}
-                className="text-gray-700 hover:text-green-700 transition"
-              >
-                Contact
-              </a>
-              <button
-                onClick={() => setActiveModal('login')}
-                className="px-4 py-2 text-green-700 hover:text-green-800 font-medium transition"
-              >
-                Sign In
-              </button>
-              <button
-                onClick={() => setActiveModal('signup')}
-                className="px-6 py-2 bg-gradient-to-r from-green-700 to-emerald-600 text-white rounded-full hover:shadow-lg transition"
-              >
-                Register
-              </button>
-            </div>
-
-            {/* Mobile Menu Toggle */}
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden p-2"
-            >
-              {isMobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
-          </div>
+    <div className="min-h-screen bg-stone-50 text-slate-900">
+      {/* Navigation */}
+      <nav className="sticky top-0 bg-white border-b border-gray-200 z-50 shadow-sm">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex justify-between items-center">
+          <Link href="/" className="text-2xl font-bold text-teal-600 tracking-tight">
+            IHEP
+          </Link>
+          <ul className="hidden md:flex gap-6 text-sm font-medium">
+            <li><a href="#overview" className="hover:text-teal-600 transition">Overview</a></li>
+            <li><a href="#documents" className="hover:text-teal-600 transition">Documents</a></li>
+            <li><a href="#press" className="hover:text-teal-600 transition">Press Kit</a></li>
+            <li><a href="#team" className="hover:text-teal-600 transition">Team</a></li>
+            <li><a href="#partner" className="hover:text-teal-600 transition">Partner With Us</a></li>
+          </ul>
+          <a href="#newsletter" className="bg-teal-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-teal-700 transition">
+            Subscribe
+          </a>
         </div>
-
-        {/* Mobile Menu */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden bg-white border-t">
-            <div className="px-4 py-2 space-y-2">
-              <a
-                href="#home"
-                onClick={(e) => handleNavClick(e, 'home')}
-                className="block py-2 text-gray-700"
-              >
-                Home
-              </a>
-              <a
-                href="#features"
-                onClick={(e) => handleNavClick(e, 'features')}
-                className="block py-2 text-gray-700"
-              >
-                Features
-              </a>
-              <a
-                href="#digital-twin"
-                onClick={(e) => handleNavClick(e, 'digital-twin')}
-                className="block py-2 text-gray-700"
-              >
-                Digital Twin
-              </a>
-              <a
-                href="#about"
-                onClick={(e) => handleNavClick(e, 'about')}
-                className="block py-2 text-gray-700"
-              >
-                About
-              </a>
-              <a
-                href="#contact"
-                onClick={(e) => handleNavClick(e, 'contact')}
-                className="block py-2 text-gray-700"
-              >
-                Contact
-              </a>
-              <div className="flex gap-2 pt-2">
-                <button
-                  onClick={() => {
-                    setActiveModal('login');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="flex-1 py-2 border border-green-700 text-green-700 rounded-lg font-medium"
-                >
-                  Sign In
-                </button>
-                <button
-                  onClick={() => {
-                    setActiveModal('signup');
-                    setIsMobileMenuOpen(false);
-                  }}
-                  className="flex-1 py-2 bg-gradient-to-r from-green-700 to-emerald-600 text-white rounded-lg"
-                >
-                  Register
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
       </nav>
 
       {/* Hero Section */}
-      <section id="home" className="py-20 px-4">
-        <div className="container mx-auto max-w-7xl">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6">
-              <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-green-800 to-emerald-600 bg-clip-text text-transparent">
-                Comprehensive Aftercare Through Digital Innovation
-              </h1>
-              <p className="text-lg text-gray-600">
-                Empowering your recovery journey with cutting-edge digital twin technology,
-                personalized care management, and integrated support systems for lasting wellness.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <button
-                  onClick={() => setActiveModal('signup')}
-                  className="px-8 py-3 bg-gradient-to-r from-green-700 to-emerald-600 text-white rounded-full hover:shadow-xl transition"
-                >
-                  Get Started
-                </button>
-                <button
-                  onClick={() => scrollToSection('digital-twin')}
-                  className="px-8 py-3 border-2 border-green-700 text-green-700 rounded-full hover:bg-green-50 transition"
-                >
-                  Learn About Digital Twins
-                </button>
-              </div>
-            </div>
-            <div className="relative">
-              <div className="bg-white/90 backdrop-blur-lg rounded-3xl shadow-2xl p-8">
-                <div className="space-y-4">
-                  <div className="h-40 bg-gradient-to-r from-green-400 to-emerald-400 rounded-2xl opacity-30 animate-pulse"></div>
-                  <h3 className="text-xl font-bold text-center text-green-800">4-Twin Digital Ecosystem</h3>
-                  <p className="text-center text-gray-600">Personalized health modeling for your unique care journey</p>
-                </div>
-              </div>
-            </div>
+      <section className="bg-gradient-to-br from-teal-600 to-teal-500 text-white py-16 px-4 text-center">
+        <div className="max-w-4xl mx-auto">
+          <h1 className="text-3xl md:text-4xl font-bold mb-4 leading-tight">
+            Transforming Healthcare Aftercare Through AI-Powered Digital Twins
+          </h1>
+          <p className="text-lg mb-8 opacity-95 leading-relaxed">
+            The Integrated Health Empowerment Program (IHEP) solves the $290 billion problem of treatment non-adherence by combining patient digital twins, organizational ecosystem mapping, and federated AI learning—built on Google Cloud with compliance-first architecture.
+          </p>
+          <div className="flex gap-4 justify-center flex-wrap">
+            <a href="#overview" className="bg-white text-teal-600 px-6 py-3 rounded-lg font-bold hover:bg-gray-100 transition">
+              Learn More
+            </a>
+            <a href="/docs/ihep-pitch-deck.pdf" target="_blank" rel="noopener noreferrer" className="border-2 border-white text-white px-6 py-3 rounded-lg font-semibold hover:bg-white hover:text-teal-600 transition">
+              Download Our Deck
+            </a>
           </div>
         </div>
       </section>
 
-      {/* Features Grid */}
-      <section id="features" className="py-16 px-4 bg-white/70 backdrop-blur-lg">
-        <div className="container mx-auto max-w-7xl">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-green-800">Comprehensive Care Platform</h2>
-          <p className="text-center text-gray-600 mb-12 max-w-2xl mx-auto">
-            Your complete solution for aftercare management and personalized wellness support
-          </p>
+      {/* Overview Section */}
+      <section id="overview" className="py-16 px-4 bg-white">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-8">IHEP in 90 Seconds</h2>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featureCards.map((feature) => (
-              <Link
-                key={feature.title}
-                href={feature.href}
-                className="bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition cursor-pointer border border-green-100 block"
-                aria-label={`Go to ${feature.title}`}
-              >
-                <div className="text-left">
-                  <feature.icon className="h-12 w-12 text-green-700 mb-4" />
-                  <h3 className="text-xl font-semibold mb-2 text-green-800">{feature.title}</h3>
-                  <p className="text-gray-600">{feature.desc}</p>
-                </div>
-              </Link>
+          {/* Metrics */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12 text-center">
+            <div>
+              <div className="text-4xl font-bold text-teal-600">$290B</div>
+              <div className="text-sm text-gray-500 uppercase tracking-wide">Annual Cost of Non-Adherence</div>
+            </div>
+            <div>
+              <div className="text-4xl font-bold text-teal-600">40%</div>
+              <div className="text-sm text-gray-500 uppercase tracking-wide">HIV Patients Lost in 6 Months</div>
+            </div>
+            <div>
+              <div className="text-4xl font-bold text-teal-600">66%</div>
+              <div className="text-sm text-gray-500 uppercase tracking-wide">Current Viral Suppression Rate</div>
+            </div>
+            <div>
+              <div className="text-4xl font-bold text-teal-600">1.2M</div>
+              <div className="text-sm text-gray-500 uppercase tracking-wide">Americans Living with HIV</div>
+            </div>
+          </div>
+
+          {/* Problem/Solution/Impact Cards */}
+          <div className="grid md:grid-cols-3 gap-6 mb-12">
+            <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-teal-600">
+              <h3 className="text-xl font-semibold text-teal-600 mb-3">The Problem</h3>
+              <p className="text-gray-600">
+                When patients receive life-altering diagnoses like HIV, cancer, or rare blood diseases, the healthcare system provides excellent acute care but abandons them in the critical months that follow. The result: 40% dropout rates, $290 billion in wasted healthcare costs, and preventable deaths.
+              </p>
+            </div>
+            <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-teal-600">
+              <h3 className="text-xl font-semibold text-teal-600 mb-3">The Solution</h3>
+              <p className="text-gray-600">
+                <strong className="text-teal-600">Patient Digital Twins</strong> fuse clinical, psychosocial, environmental, and behavioral data to anticipate challenges before they manifest. <strong className="text-teal-600">Organizational Twins</strong> map entire care ecosystems. <strong className="text-teal-600">Federated AI</strong> learns across sites without moving private health information.
+              </p>
+            </div>
+            <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-teal-600">
+              <h3 className="text-xl font-semibold text-teal-600 mb-3">The Impact</h3>
+              <p className="text-gray-600">
+                Phase I pilot targeting 15% improvement in appointment adherence, 25% reduction in emergency department visits, and 85% viral suppression rate (vs. 66% national average). Built on Google Cloud with NIST SP 800-53r5 compliance-first architecture.
+              </p>
+            </div>
+          </div>
+
+          {/* Funding Box */}
+          <div className="bg-gray-100 p-6 rounded-xl">
+            <h3 className="text-xl font-bold mb-3">Raising $3.5M Series Seed</h3>
+            <p className="text-gray-600 mb-4">
+              To fund Phase I pilot deployment in Miami/Orlando, executive team assembly, compliance validation, and outcome demonstration.
+            </p>
+            <p className="text-gray-700 mb-2">
+              <strong>Investment Terms:</strong> Convertible note, 20% Series A discount, $15M cap, 6% interest, 24-month maturity. Minimum investment $100K.
+            </p>
+            <p className="text-gray-700">
+              <strong>Timeline:</strong> Operations commence March 2026. SBIR Phase I application April 5, 2026 ($300K non-dilutive if successful).
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* Document Library */}
+      <section id="documents" className="py-16 px-4 bg-gray-100">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-4">Document Library</h2>
+          <p className="text-center text-gray-500 mb-12">All materials available for download. Password-protected materials upon request.</p>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              { icon: '📄', title: 'One-Page Overview', desc: 'Quick introduction to IHEP\'s problem, solution, market opportunity, and funding ask. Perfect for first impressions.', size: 'PDF', href: '/docs/A%20Recursive%20Blueprint%20for%20a%20Global%20Problem.pdf' },
+              { icon: '📊', title: 'Investor Deck', desc: 'Comprehensive 10-12 slide presentation covering market opportunity, technology differentiation, financial projections, team, and investment terms.', size: 'PDF', href: '/docs/ihep-pitch-deck.pdf' },
+              { icon: '🏗️', title: 'Technical Architecture', desc: 'Detailed whitepaper covering digital twin technology, federated learning, morphogenetic framework, and NIST compliance architecture.', size: 'PDF', href: '/docs/IHEP%20System%20Architecture%20Document.pdf' },
+              { icon: '💰', title: 'Financial Model', desc: 'Phase I budget breakdown, 10-year financial projections, unit economics, and path to profitability. Conservative assumptions detailed.', size: 'PDF', href: '/docs/IHEP%20Comprehensive%20Financial%20Model.pdf' },
+              { icon: '🎯', title: 'Pilot Plan & Timeline', desc: 'Detailed Phase I implementation roadmap with milestones, success metrics, outcome measurement methodology, and measurable endpoints.', size: 'PDF', href: '/docs/IHEP%20Phase%20I%20Detailed%20Project%20Plan.pdf' },
+              { icon: '📋', title: 'Due Diligence Package', desc: 'Complete due diligence documentation for investor review including all key materials and supporting documents.', size: 'PDF', href: '/docs/IHEP%20Complete%20Due%20Diligence%20Package.pdf' },
+            ].map((doc) => (
+              <a key={doc.title} href={doc.href} target="_blank" rel="noopener noreferrer" className="bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition block">
+                <div className="text-3xl mb-3">{doc.icon}</div>
+                <h3 className="font-semibold mb-2">{doc.title}</h3>
+                <p className="text-sm text-gray-500 mb-3">{doc.desc}</p>
+                <div className="text-xs text-gray-400">{doc.size}</div>
+              </a>
             ))}
           </div>
+
+          <p className="text-center text-gray-500 text-sm mt-12">
+            Additional materials available upon request: Technical specifications - Security & Compliance Framework - Clinical Study Protocol - Partnership Agreements - Regulatory Strategy
+          </p>
         </div>
       </section>
 
-      {/* Digital Twin Section */}
-      <section id="digital-twin" className="py-16 px-4 bg-gradient-to-r from-green-100 to-emerald-100">
-        <div className="container mx-auto max-w-7xl">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div className="space-y-6">
-              <h2 className="text-3xl md:text-4xl font-bold text-green-800">4-Twin Digital Ecosystem</h2>
-              <h3 className="text-xl text-amber-600 font-semibold">Personalized Care Through AI Simulation</h3>
-              <p className="text-gray-600">
-                Our revolutionary digital twin platform creates virtual models across four key dimensions
-                of your wellbeing, allowing us to optimize your care journey with precision and insight.
-              </p>
-              <div className="space-y-3">
-                <h4 className="font-semibold text-green-700">Integrated Care Features</h4>
-                {[
-                  'Health Twin: Real-time wellness monitoring and predictions',
-                  'Financial Twin: Resource optimization and empowerment tools',
-                  'Social Twin: Community connections and support networks',
-                  'Care Twin: Treatment tracking and provider coordination'
-                ].map((item, idx) => (
-                  <div key={idx} className="flex items-center space-x-2">
-                    <ChevronRight className="h-5 w-5 text-green-600" />
-                    <span className="text-gray-700">{item}</span>
-                  </div>
-                ))}
-              </div>
-              <button
-                onClick={() => setActiveModal('signup')}
-                className="px-8 py-3 bg-gradient-to-r from-green-700 to-emerald-600 text-white rounded-full hover:shadow-xl transition"
-              >
-                Explore Digital Twin Program
-              </button>
-            </div>
-            <div className="flex justify-center">
-              <div className="relative w-64 h-64 md:w-80 md:h-80">
-                <div className="absolute inset-0 bg-gradient-to-r from-green-400 to-emerald-400 rounded-full animate-pulse opacity-30"></div>
-                <div className="absolute inset-4 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full animate-pulse opacity-40"></div>
-                <div className="absolute inset-8 bg-gradient-to-r from-green-600 to-emerald-600 rounded-full animate-pulse opacity-50"></div>
-              </div>
-            </div>
+      {/* Press Kit */}
+      <section id="press" className="py-16 px-4 bg-white">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-8">Press & Media Kit</h2>
+
+          <div className="bg-gray-100 p-8 rounded-xl">
+            <h3 className="text-xl font-bold mb-4">Company Boilerplate</h3>
+
+            <p className="font-semibold mb-2">50-word version:</p>
+            <p className="text-gray-600 italic mb-6">
+              &quot;The Integrated Health Empowerment Program (IHEP) is an AI-driven digital health platform transforming aftercare for life-altering conditions. Using patient digital twins, organizational ecosystem mapping, and federated learning, IHEP addresses the $290 billion problem of treatment non-adherence while building the data infrastructure for breakthrough treatments. Founded by Jason Jarmacz.&quot;
+            </p>
+
+            <p className="font-semibold mb-2">100-word version:</p>
+            <p className="text-gray-600 italic mb-8">
+              &quot;The Integrated Health Empowerment Program (IHEP) is a morphogenetic digital health ecosystem solving the $290 billion annual crisis of treatment non-adherence in life-altering conditions like HIV, cancer, and rare blood diseases. IHEP combines three layers of innovation: patient digital twins that anticipate challenges before they manifest, organizational twins that optimize entire care ecosystems, and federated AI networks that learn across sites without moving private health information. Built on Google Cloud with compliance-first NIST SP 800-53r5 architecture, IHEP demonstrates measurable outcomes while building the data infrastructure for functional cures. Founded by Jason Jarmacz, Chief Evolution Strategist, IHEP is raising a $3.5M Series Seed to fund Phase I pilot operations.&quot;
+            </p>
+
+            <h3 className="text-xl font-bold mb-4">Media Assets</h3>
+            <ul className="space-y-2 text-gray-700">
+              <li><strong>Logo Files:</strong> SVG, PNG (white, dark, full color versions) available upon request</li>
+              <li><strong>Founder Photo:</strong> High-resolution headshot (JPG, 4000x5000px) available upon request</li>
+              <li><strong>Key Statistics:</strong> $290B annual cost, 40% dropout rate, 1.2M Americans with HIV, 25.9% digital health CAGR</li>
+              <li><strong>Media Contact:</strong> press@ihep.app</li>
+            </ul>
           </div>
         </div>
       </section>
 
-      {/* About Section */}
-      <section id="about" className="py-16 px-4 bg-white/70 backdrop-blur-lg">
-        <div className="container mx-auto max-w-7xl">
-          <h2 className="text-3xl md:text-4xl font-bold text-center mb-4 text-green-800">About IHEP</h2>
-          <p className="text-center text-gray-600 mb-12 max-w-3xl mx-auto">
-            The Integrated Health Empowerment Program is a comprehensive aftercare management platform
-            designed to support individuals managing chronic conditions on their path to wellness.
+      {/* Team Section */}
+      <section id="team" className="py-16 px-4 bg-gray-100">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-8">Founding Team & Advisory</h2>
+
+          <div className="mb-12">
+            <h3 className="text-xl font-bold mb-3">Jason Jarmacz, Founder & Principal Investigator</h3>
+            <p className="text-gray-600">
+              15+ years in business development and research analytics; 5+ years in healthcare insights. Jason has persevered through multiple hardships pursuing his life goal of developing an application that changes humanity and provides uplift to community. His evolution strategy framework informed IHEP&apos;s three-layer architecture. Based in Newark, New Jersey.
+            </p>
+          </div>
+
+          <h3 className="text-xl font-bold mb-6">Positions Now Hiring (Phase I)</h3>
+
+          <div className="space-y-6">
+            {[
+              { title: 'Chief Technology Officer', reqs: '10+ years software architecture, healthcare tech background, AI/ML expertise, HIPAA-compliant systems at scale', comp: '$200K base + 3% equity + performance bonuses' },
+              { title: 'Chief Security & Compliance Officer', reqs: 'CISSP/equivalent, healthcare compliance expertise (HIPAA, NIST), FDA digital health regulations', comp: '$180K base + 2% equity' },
+              { title: 'Clinical Director', reqs: 'MD/equivalent, HIV/AIDS clinical expertise, clinical informatics background', comp: '$220K base + 2% equity' },
+              { title: 'Community Engagement Director', reqs: '7+ years community health work, HIV/AIDS service org leadership, lived experience preferred', comp: '$140K base + 1.5% equity' },
+              { title: 'AI/ML Lead Engineer', reqs: 'PhD in CS/ML or equivalent, healthcare AI experience, federated learning expertise', comp: '$180K base + 2% equity' },
+              { title: 'Senior Software Engineer', reqs: '7+ years full-stack development, healthcare systems experience, HIPAA compliance knowledge', comp: '$160K base + 1.5% equity' },
+            ].map((job) => (
+              <div key={job.title} className="bg-white p-4 rounded-lg">
+                <h4 className="font-semibold">{job.title}</h4>
+                <p className="text-sm text-gray-600">Requirements: {job.reqs}</p>
+                <p className="text-sm text-gray-700">Compensation: {job.comp}</p>
+              </div>
+            ))}
+          </div>
+
+          <p className="mt-8 text-gray-600">
+            <strong>Advisory Board Status:</strong> Building advisory board of healthcare researchers, health equity experts, AI ethicists, and experienced founders. Advisor compensation: 0.25% equity, 2-year vest, quarterly engagement requirements.
+          </p>
+        </div>
+      </section>
+
+      {/* Partnership Section */}
+      <section id="partner" className="py-16 px-4 bg-white">
+        <div className="max-w-6xl mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-4">Partner With IHEP</h2>
+          <p className="text-center text-lg text-gray-600 mb-12">
+            We&apos;re seeking partnerships across three dimensions: investment, clinical collaboration, and technology integration.
           </p>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center p-6">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-100 flex items-center justify-center">
-                <Heart className="h-8 w-8 text-green-700" />
-              </div>
-              <h3 className="text-xl font-bold mb-2 text-green-800">Patient-Centered</h3>
-              <p className="text-gray-600">Built around your unique health journey with personalized care pathways.</p>
+          <div className="grid md:grid-cols-3 gap-6 mb-12">
+            <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-teal-600">
+              <h3 className="text-xl font-semibold text-teal-600 mb-3">💰 Funding Partnership</h3>
+              <p className="text-gray-600 mb-3">
+                <strong>Investment Opportunity:</strong> $3.5M Series Seed round at $12M pre-money valuation. Convertible note terms: 20% Series A discount, $15M cap, 6% interest, 24-month maturity.
+              </p>
+              <p className="text-gray-600">
+                <strong>Investor Types:</strong> VCs, impact investors, angels, strategic investors, foundations.
+              </p>
             </div>
-            <div className="text-center p-6">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-amber-100 flex items-center justify-center">
-                <Sparkles className="h-8 w-8 text-amber-600" />
-              </div>
-              <h3 className="text-xl font-bold mb-2 text-green-800">Innovation-Driven</h3>
-              <p className="text-gray-600">Leveraging AI and digital twin technology for better outcomes.</p>
+            <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-teal-600">
+              <h3 className="text-xl font-semibold text-teal-600 mb-3">🏥 Healthcare System Partnership</h3>
+              <p className="text-gray-600">
+                <strong>Phase I Pilot Sites:</strong> Seeking 2-4 healthcare systems in Miami/Orlando for 150-300 participant pilot. Pilot partners receive early access to platform, co-publication opportunities, revenue sharing on successful outcomes.
+              </p>
             </div>
-            <div className="text-center p-6">
-              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-100 flex items-center justify-center">
-                <Users className="h-8 w-8 text-green-700" />
-              </div>
-              <h3 className="text-xl font-bold mb-2 text-green-800">Community-Focused</h3>
-              <p className="text-gray-600">Connecting you with support networks and resources for holistic care.</p>
+            <div className="bg-white p-6 rounded-xl shadow-sm border-l-4 border-teal-600">
+              <h3 className="text-xl font-semibold text-teal-600 mb-3">🔬 Research Collaboration</h3>
+              <p className="text-gray-600 mb-3">
+                <strong>Academic Partners:</strong> Co-PI arrangements, data access agreements, joint publications. Platform offers unprecedented longitudinal dataset for HIV treatment research.
+              </p>
+              <p className="text-gray-600">
+                <strong>Also Seeking:</strong> Regulatory consultants, clinical advisors, AI ethics experts.
+              </p>
             </div>
           </div>
-        </div>
-      </section>
 
-      {/* Contact Form Section */}
-      <section id="contact" className="py-16 px-4 bg-gradient-to-r from-green-100 to-emerald-100">
-        <div className="container mx-auto max-w-7xl">
-          <div className="grid md:grid-cols-2 gap-12 items-start">
-            <div className="space-y-6">
-              <h2 className="text-3xl md:text-4xl font-bold text-green-800">Get In Touch</h2>
-              <p className="text-gray-600">
-                Have questions about IHEP or need assistance? Our team is here to help you on your wellness journey.
-                Fill out the form and we will get back to you within 24 hours.
-              </p>
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-full bg-green-200 flex items-center justify-center">
-                    <Mail className="h-5 w-5 text-green-700" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-green-800">Email</p>
-                    <p className="text-gray-600">support@ihep.app</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-full bg-green-200 flex items-center justify-center">
-                    <Phone className="h-5 w-5 text-green-700" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-green-800">Phone</p>
-                    <p className="text-gray-600">1-800-IHEP-CARE</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <div className="w-10 h-10 rounded-full bg-green-200 flex items-center justify-center">
-                    <Clock className="h-5 w-5 text-green-700" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-green-800">Telehealth Available</p>
-                    <p className="text-gray-600">24/7 Support</p>
-                  </div>
-                </div>
-              </div>
-            </div>
+          {/* Newsletter Signup */}
+          <div id="newsletter" className="bg-gradient-to-br from-teal-600 to-teal-500 text-white p-8 rounded-xl text-center">
+            <h3 className="text-2xl font-bold mb-2">Stay Connected</h3>
+            <p className="text-lg mb-6 opacity-95">
+              Subscribe to IHEP Progress Brief—weekly updates on digital health innovation, clinical outcomes, and fundraising milestones.
+            </p>
 
-            <div className="bg-white rounded-2xl shadow-xl p-6 md:p-8">
-              {contactSubmitted ? (
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-100 flex items-center justify-center">
-                    <Heart className="h-8 w-8 text-green-700" />
-                  </div>
-                  <h3 className="text-xl font-bold text-green-800 mb-2">Thank You!</h3>
-                  <p className="text-gray-600 mb-4">Your message has been received. We will get back to you shortly.</p>
-                  <button
-                    onClick={() => setContactSubmitted(false)}
-                    className="px-6 py-2 border-2 border-green-700 text-green-700 rounded-full hover:bg-green-50 transition"
-                  >
-                    Send Another Message
-                  </button>
-                </div>
-              ) : (
-                <form onSubmit={handleContactSubmit} className="space-y-4">
-                  <h3 className="text-xl font-bold text-green-800 mb-4">Send Us a Message</h3>
-                  <div>
-                    <label htmlFor="contact-name" className="block text-sm font-medium mb-1 text-gray-700">Full Name</label>
-                    <input
-                      id="contact-name"
-                      type="text"
-                      value={contactData.name}
-                      onChange={(e) => setContactData({ ...contactData, name: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                      required
-                      disabled={contactLoading}
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="contact-email" className="block text-sm font-medium mb-1 text-gray-700">Email Address</label>
-                    <input
-                      id="contact-email"
-                      type="email"
-                      value={contactData.email}
-                      onChange={(e) => setContactData({ ...contactData, email: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                      required
-                      disabled={contactLoading}
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="contact-subject" className="block text-sm font-medium mb-1 text-gray-700">Subject</label>
-                    <select
-                      id="contact-subject"
-                      value={contactData.subject}
-                      onChange={(e) => setContactData({ ...contactData, subject: e.target.value })}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                      required
-                      disabled={contactLoading}
-                    >
-                      <option value="">Select a topic</option>
-                      <option value="general">General Inquiry</option>
-                      <option value="support">Technical Support</option>
-                      <option value="enrollment">Program Enrollment</option>
-                      <option value="provider">Healthcare Provider</option>
-                      <option value="partnership">Partnership Opportunity</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label htmlFor="contact-message" className="block text-sm font-medium mb-1 text-gray-700">Message</label>
-                    <textarea
-                      id="contact-message"
-                      value={contactData.message}
-                      onChange={(e) => setContactData({ ...contactData, message: e.target.value })}
-                      rows={4}
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent resize-none"
-                      required
-                      disabled={contactLoading}
-                    />
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={contactLoading}
-                    className="w-full py-3 bg-gradient-to-r from-green-700 to-emerald-600 text-white rounded-lg hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-                  >
-                    {contactLoading ? (
-                      <>
-                        <Loader2 className="animate-spin h-5 w-5 mr-2" />
-                        Sending...
-                      </>
-                    ) : (
-                      'Send Message'
-                    )}
-                  </button>
-                </form>
-              )}
-            </div>
+            {subscribed ? (
+              <p className="text-lg font-semibold">Thank you for subscribing! Check your email for a welcome message.</p>
+            ) : (
+              <form onSubmit={handleNewsletterSubmit} className="flex gap-2 max-w-md mx-auto flex-wrap justify-center">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="your.email@example.com"
+                  required
+                  className="flex-1 min-w-[200px] px-4 py-3 rounded-lg text-gray-900"
+                />
+                <button type="submit" className="bg-white text-teal-600 px-6 py-3 rounded-lg font-bold hover:bg-gray-100 transition">
+                  Subscribe
+                </button>
+              </form>
+            )}
+
+            <p className="text-sm mt-4 opacity-90">We&apos;ll never share your email. Unsubscribe anytime.</p>
           </div>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="bg-green-900 text-white py-12 px-4">
-        <div className="container mx-auto max-w-7xl">
-          <div className="grid md:grid-cols-4 gap-8">
+      <footer className="bg-slate-900 text-white py-12 px-4">
+        <div className="max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
-              <h3 className="text-xl font-bold mb-4">IHEP</h3>
-              <p className="text-green-200">Pioneering the future of aftercare through digital innovation and integrated support.</p>
-              <div className="flex space-x-2 mt-4">
-                <span className="px-3 py-1 bg-green-800 rounded text-sm">HIPAA</span>
-                <span className="px-3 py-1 bg-green-800 rounded text-sm">PHI</span>
-                <span className="px-3 py-1 bg-green-800 rounded text-sm">PPI</span>
-              </div>
-            </div>
-
-            <div>
-              <h3 className="text-lg font-semibold mb-4">Quick Links</h3>
-              <ul className="space-y-2 text-green-200">
-                <li><a href="#about" className="hover:text-white transition">About Us</a></li>
-                <li><a href="#contact" className="hover:text-white transition">Contact</a></li>
-                <li><a href="#privacy" className="hover:text-white transition">Privacy Policy</a></li>
-                <li><a href="#terms" className="hover:text-white transition">Terms & Conditions</a></li>
+              <h4 className="font-semibold mb-4">About IHEP</h4>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li><a href="#overview" className="hover:text-white transition">Our Mission</a></li>
+                <li><a href="#team" className="hover:text-white transition">Leadership</a></li>
+                <li><a href="#partner" className="hover:text-white transition">Careers</a></li>
+                <li><a href="mailto:press@ihep.app" className="hover:text-white transition">Press Inquiries</a></li>
               </ul>
             </div>
-
             <div>
-              <h3 className="text-lg font-semibold mb-4">Resources</h3>
-              <ul className="space-y-2 text-green-200">
-                <li><a href="#education" className="hover:text-white transition">Patient Education</a></li>
-                <li><a href="#support" className="hover:text-white transition">Support Groups</a></li>
-                <li><a href="#programs" className="hover:text-white transition">Community Programs</a></li>
-                <li><a href="#faq" className="hover:text-white transition">FAQ</a></li>
+              <h4 className="font-semibold mb-4">Resources</h4>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li><a href="#documents" className="hover:text-white transition">Document Library</a></li>
+                <li><a href="#documents" className="hover:text-white transition">Investor Deck</a></li>
+                <li><a href="#documents" className="hover:text-white transition">Technical Architecture</a></li>
+                <li><a href="#documents" className="hover:text-white transition">FAQ</a></li>
               </ul>
             </div>
-
             <div>
-              <h3 className="text-lg font-semibold mb-4">Contact</h3>
-              <ul className="space-y-2 text-green-200">
-                <li className="flex items-center space-x-2">
-                  <Mail className="h-4 w-4" />
-                  <span>support@ihep.app</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <Phone className="h-4 w-4" />
-                  <span>1-800-IHEP-CARE</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <Clock className="h-4 w-4" />
-                  <span>24/7 Telehealth</span>
-                </li>
-                <li className="flex items-center space-x-2">
-                  <MapPin className="h-4 w-4" />
-                  <span>Multiple Locations</span>
-                </li>
+              <h4 className="font-semibold mb-4">Connect</h4>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li><a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">LinkedIn</a></li>
+                <li><a href="https://substack.com" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">Newsletter</a></li>
+                <li><a href="mailto:newsletter@ihep.app" className="hover:text-white transition">Contact Us</a></li>
+                <li><a href="https://zenodo.org" target="_blank" rel="noopener noreferrer" className="hover:text-white transition">Publications (DOI)</a></li>
+              </ul>
+            </div>
+            <div>
+              <h4 className="font-semibold mb-4">Compliance</h4>
+              <ul className="space-y-2 text-sm text-gray-400">
+                <li><Link href="/legal/privacy" className="hover:text-white transition">Privacy Policy</Link></li>
+                <li><Link href="/legal/terms" className="hover:text-white transition">Terms of Service</Link></li>
+                <li><Link href="/legal/compliance" className="hover:text-white transition">Security Framework</Link></li>
+                <li><Link href="/legal/compliance" className="hover:text-white transition">HIPAA Notice</Link></li>
               </ul>
             </div>
           </div>
 
-          <div className="border-t border-green-800 mt-8 pt-8 text-center text-green-200">
-            <p>© 2024 IHEP - Integrated Health Empowerment Program. All rights reserved. Protected Health Information secured under HIPAA compliance.</p>
+          <div className="border-t border-gray-800 pt-8 text-center text-sm text-gray-500">
+            <p>Copyright 2026 Integrated Health Empowerment Program (IHEP). All rights reserved.</p>
+            <p className="mt-2">Building the future of healthcare aftercare through AI-powered digital twins and community partnership.</p>
           </div>
         </div>
       </footer>
-
-      {/* Login Modal */}
-      {activeModal === 'login' && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-6 md:p-8 w-full max-w-md relative">
-            <h2 className="text-2xl font-bold mb-6 text-green-800">Sign In</h2>
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div>
-                <label htmlFor="login-username" className="block text-sm font-medium mb-1 text-gray-700">Username</label>
-                <input
-                  id="login-username"
-                  type="text"
-                  value={loginData.username}
-                  onChange={(e) => setLoginData({ ...loginData, username: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                  required
-                  disabled={loginLoading}
-                />
-              </div>
-              <div>
-                <label htmlFor="login-password" className="block text-sm font-medium mb-1 text-gray-700">Password</label>
-                <input
-                  id="login-password"
-                  type="password"
-                  value={loginData.password}
-                  onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                  required
-                  disabled={loginLoading}
-                />
-              </div>
-              {loginError && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                  {loginError}
-                </div>
-              )}
-              <button
-                type="submit"
-                disabled={loginLoading}
-                className="w-full py-3 bg-gradient-to-r from-green-700 to-emerald-600 text-white rounded-lg hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-              >
-                {loginLoading ? (
-                  <>
-                    <Loader2 className="animate-spin h-5 w-5 mr-2" />
-                    Signing in...
-                  </>
-                ) : (
-                  'Sign In'
-                )}
-              </button>
-            </form>
-            <p className="text-center mt-4 text-gray-600">
-              Do not have an account?{' '}
-              <button onClick={() => { setActiveModal('signup'); setLoginError(''); }} className="text-green-700 font-medium hover:underline">
-                Register
-              </button>
-            </p>
-            <button
-              onClick={() => { setActiveModal(null); setLoginError(''); setLoginData({ username: '', password: '' }); }}
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-            >
-              <X className="h-6 w-6" />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Signup Modal */}
-      {activeModal === 'signup' && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-2xl p-6 md:p-8 w-full max-w-md max-h-[90vh] overflow-y-auto relative">
-            <h2 className="text-2xl font-bold mb-6 text-green-800">Create Account</h2>
-            <form onSubmit={handleSignup} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label htmlFor="signup-firstName" className="block text-sm font-medium mb-1 text-gray-700">First Name</label>
-                  <input
-                    id="signup-firstName"
-                    type="text"
-                    value={signupData.firstName}
-                    onChange={(e) => setSignupData({ ...signupData, firstName: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                    required
-                    disabled={signupLoading}
-                  />
-                </div>
-                <div>
-                  <label htmlFor="signup-lastName" className="block text-sm font-medium mb-1 text-gray-700">Last Name</label>
-                  <input
-                    id="signup-lastName"
-                    type="text"
-                    value={signupData.lastName}
-                    onChange={(e) => setSignupData({ ...signupData, lastName: e.target.value })}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                    required
-                    disabled={signupLoading}
-                  />
-                </div>
-              </div>
-              <div>
-                <label htmlFor="signup-username" className="block text-sm font-medium mb-1 text-gray-700">Username</label>
-                <input
-                  id="signup-username"
-                  type="text"
-                  value={signupData.username}
-                  onChange={(e) => setSignupData({ ...signupData, username: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                  required
-                  minLength={3}
-                  disabled={signupLoading}
-                />
-              </div>
-              <div>
-                <label htmlFor="signup-email" className="block text-sm font-medium mb-1 text-gray-700">Email</label>
-                <input
-                  id="signup-email"
-                  type="email"
-                  value={signupData.email}
-                  onChange={(e) => setSignupData({ ...signupData, email: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                  required
-                  disabled={signupLoading}
-                />
-              </div>
-              <div>
-                <label htmlFor="signup-password" className="block text-sm font-medium mb-1 text-gray-700">Password</label>
-                <input
-                  id="signup-password"
-                  type="password"
-                  value={signupData.password}
-                  onChange={(e) => setSignupData({ ...signupData, password: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                  required
-                  minLength={12}
-                  disabled={signupLoading}
-                />
-                <p className="text-xs text-gray-500 mt-1">Min 12 characters, include uppercase, lowercase, number, and special character</p>
-              </div>
-              <div>
-                <label htmlFor="signup-phone" className="block text-sm font-medium mb-1 text-gray-700">Phone (Optional)</label>
-                <input
-                  id="signup-phone"
-                  type="tel"
-                  value={signupData.phone}
-                  onChange={(e) => setSignupData({ ...signupData, phone: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-600 focus:border-transparent"
-                  disabled={signupLoading}
-                />
-              </div>
-              <div className="flex items-start space-x-2">
-                <input
-                  id="signup-terms"
-                  type="checkbox"
-                  checked={signupData.agreeToTerms}
-                  onChange={(e) => setSignupData({ ...signupData, agreeToTerms: e.target.checked })}
-                  className="mt-1 accent-green-600"
-                  disabled={signupLoading}
-                />
-                <label htmlFor="signup-terms" className="text-sm text-gray-600">
-                  I agree to the Terms of Service, Privacy Policy, and HIPAA Authorization
-                </label>
-              </div>
-              {signupError && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
-                  {signupError}
-                </div>
-              )}
-              <button
-                type="submit"
-                disabled={signupLoading}
-                className="w-full py-3 bg-gradient-to-r from-green-700 to-emerald-600 text-white rounded-lg hover:shadow-lg transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-              >
-                {signupLoading ? (
-                  <>
-                    <Loader2 className="animate-spin h-5 w-5 mr-2" />
-                    Creating Account...
-                  </>
-                ) : (
-                  'Create Account'
-                )}
-              </button>
-            </form>
-            <p className="text-center mt-4 text-gray-600">
-              Already have an account?{' '}
-              <button onClick={() => { setActiveModal('login'); setSignupError(''); }} className="text-green-700 font-medium hover:underline">
-                Sign In
-              </button>
-            </p>
-            <button
-              onClick={() => { setActiveModal(null); setSignupError(''); setSignupData({ firstName: '', lastName: '', username: '', email: '', password: '', phone: '', agreeToTerms: false }); }}
-              className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
-            >
-              <X className="h-6 w-6" />
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
