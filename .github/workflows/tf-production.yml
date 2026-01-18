@@ -16,7 +16,7 @@ jobs:
       GCP_SA_EMAIL: github-actions-sa@gen-lang-client-0928975904.iam.gserviceaccount.com
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Auth to Google Cloud (OIDC)
         uses: google-github-actions/auth@v2
@@ -60,7 +60,7 @@ jobs:
       GCP_SA_EMAIL: github-actions-sa@gen-lang-client-0928975904.iam.gserviceaccount.com
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Auth to Google Cloud (OIDC)
         uses: google-github-actions/auth@v2
