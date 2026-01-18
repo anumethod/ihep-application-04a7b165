@@ -62,13 +62,9 @@ openusd/
 
 # Vendor code - never commit these large directories
 three.js-master/
-OpenUSD/
 /models/medgemma-4b-it/
 
-# Large binary/model files
-*.usdz
-*.usda
-*.usdc
+# Large binary/model files (keep USD files for OpenUSD partnership)
 *.glb
 *.gltf
 *.safetensors
